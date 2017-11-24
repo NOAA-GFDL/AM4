@@ -2709,7 +2709,8 @@ end	# obs radiation type
 
 echo '- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -'
 echo 'transfer output files from local to remote output directory...'
-gcp -cd -r $local_out_rdir/* $out_dir || exit 1
+if ( ! -d $out_dir ) mkdir -p $out_dir || exit 1
+gcp -cd -r $local_out_rdir/ $out_dir || exit 1
 echo '...output files transferred from local output directory:'
 echo $local_out_rdir
 echo 'to remote output directory:'
