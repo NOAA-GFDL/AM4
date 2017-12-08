@@ -1,0 +1,510 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.7 [en] (X11; U; IRIX 6.5 IP22) [Netscape]">
+   <title>module diag_cloud_mod</title>
+</head>
+<body text="#332211" bgcolor="#AABBCC">
+
+<center><font size=-2><a href="#INTERFACE">PUBLIC INTERFACE</a> / <a href="#ROUTINES">ROUTINES</a>
+/ <a href="#NAMELIST">NAMELIST</a> / <a href="#CHANGES">CHANGES</a> / <a href="#ERRORS">ERRORS</a>
+/ <a href="#REFERENCES">REFERENCES</a> / <a href="#NOTES">NOTES</a></font></center>
+
+<p>
+<hr>
+<h2>
+module diag_cloud_mod</h2>
+<a NAME="HEADER"></a>
+<pre>&nbsp;&nbsp;&nbsp;&nbsp; <b>Contact:</b>&nbsp;&nbsp; Bill Stern, Tony Gordon
+&nbsp;&nbsp;&nbsp;&nbsp; <b>Reviewers:
+
+</b>&nbsp;&nbsp;&nbsp;&nbsp; <b><a href=".doc.log#diag_cloud.f90">Tags/Status</a></b></pre>
+<!-- END HEADER --><!---------------------------------------------------------------------><a NAME="OVERVIEW"></a>
+<hr>
+<h4>
+OVERVIEW</h4>
+<!-- BEGIN OVERVIEW -->&nbsp;&nbsp;&nbsp;&nbsp; <b>DIAG_CLOUD - DIAGNOSTIC
+CLOUD PREDICTION</b> - Gordon (1992)
+<br>&nbsp;
+<blockquote>Calculates cloud fractions diagnostically using relative humidity,
+omega and stability.
+<p><a NAME="DESCRIPTION"></a><!-- BEGIN DESCRIPTION --></blockquote>
+
+<blockquote>This cloud parameterization scheme closely resembles the empirically
+based RH threshold scheme of Slingo (1987). Fractional cloud amount is
+predicted quasi-empirically.&nbsp; It is possible to determine cloud amounts
+for 7 different cloud types, as follows:
+<p>Type 1 - Relative humidity (RH) cloud, where cloud amounts > 0 will
+occur above some specified critical RH value increasing either linearly
+or quadratically up to 100%.
+<br>Type 2 - A modified (reduced) RH low cloud amount may result in some
+regions of descending motion if this option is activated.
+<br>Type 3 - Marine stratus type low clouds are determined using linear
+regression via a combination approaches by Slingo and Tim Li. (not yet
+implemented as of August 2000)
+<br>Type 4 - Shallow convective low clouds may be computed above a locally
+determined LCL up to the top of the low cloud region.
+<br>Type 5 - Deep convective clouds are determined based on the occurance
+of convection as determined by the convective parameterization.&nbsp; The
+actual cloud fractions will then be calculated based on a linear regression
+between cloud amount and convective precip. (In practice this cloud type
+is not being used.)
+<br>Types 6 &amp; 7 - High clouds that occur in regions of convection may
+be determined to be anvil or super anvil cirrus.&nbsp; With regard to cloud
+amount they are treated the same as other high clouds, however, they will
+have different cloud optical properties.
+<p>Clouds are vertically grouped as either high, middle or low based on
+a seasonally varying climatological normalized pressure level limits.
+<br>&nbsp;
+<br>&nbsp;</blockquote>
+<!-- END DESCRIPTION --><!---------------------------------------------------------------------><a NAME="MODULES_USED"></a>
+<hr>
+<h4>
+OTHER MODULES USED</h4>
+<!-- BEGIN MODULES_USED -->&nbsp;&nbsp;&nbsp;&nbsp; constants_mod
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; utilities_mod
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; time_manager_mod
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cloud_zonal_mod
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; diag_cloud_rad_mod
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; sat_vapor_pres_mod
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; shallow_conv_mod
+<br>&nbsp;
+<br>&nbsp;
+<p><!-- END MODULES_USED --><!---------------------------------------------------------------------><a NAME="INTERFACE"></a>
+<hr>
+<h4>
+PUBLIC INTERFACE</h4>
+<!-- BEGIN INTERFACE -->use diag_cloud_mod [,only:&nbsp; diag_cloud_driver,
+diag_cloud_init, diag_cloud_end, diag_cloud_sum, diag_cloud_avg, do_diag_cloud&nbsp;&nbsp;
+]
+<p>diag_cloud_init&nbsp; - Called once to initialize diag_cloud -&nbsp; Allocates
+storage for global cloud quantities,
+<br>read in a cloud restart file and also reads namelist. Must be called
+before diag_cloud.
+<p>diag_cloud_driver&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Driver for diagnostic
+cloud prediction module
+<p>diag_cloud_end&nbsp; - Writes out cloud restart file..
+<p>diag_cloud_sum -&nbsp; Accumulates diagnostic cloud predictors for time
+averaging.
+<p>diag_cloud_avg - Calculates time averaged predictors to be used in diag_cloud
+to compute clouds
+<p>do_diag_cloud -&nbsp; returns logical value for whether diag_cloud has
+been initialized
+<p>Notes:
+<br>&nbsp;* A namelist interface ( &amp;diag_cloud_nml ) controls runtime
+options.
+<br>&nbsp;
+<br>&nbsp;
+<p><!-- END INTERFACE --><!---------------------------------------------------------------------><a NAME="ROUTINES"></a>
+<hr>
+<h4>
+PUBLIC ROUTINES</h4>
+<!-- BEGIN ROUTINES --><b>call diag_cloud_init (ix,iy,kx, ierr)</b>
+<br>!---------------------------------------------------------------------
+<br>! Input Arguments
+<br>!&nbsp; parmameter mxband = max number of radiative bands to be considered
+for some
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+cloud properties (defined at top of module)
+<br>!
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; IX, IY, KX&nbsp;&nbsp; Dimensions for
+global storage arrays (2- horiz, vert)
+<br>!---------------------------------------------------------------------
+<br>&nbsp;integer, intent(in) :: ix, iy, kx
+<br>!---------------------------------------------------------------------
+<br>! Output Argument
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; IERR&nbsp;&nbsp;&nbsp;&nbsp; Error
+flag
+<br>!---------------------------------------------------------------------
+<br>&nbsp;integer, intent(out) :: ierr
+<br>!---------------------------------------------------------------------
+<br>&nbsp;
+<br>&nbsp;
+<p>&nbsp; <b>call diag_cloud_driver (is,js, &amp;</b>
+<br><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+temp,qmix,rhum,omega,lgscldelq,cnvcntq,convprc, &amp;</b>
+<br><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+pfull,phalf,psfc,coszen,lat,time, &amp;</b>
+<br><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+nclds,cldtop,cldbas,cldamt,r_uv,r_nir,ab_uv,ab_nir, &amp;</b>
+<br><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+em_lw,kbot)</b>
+<br>!---------------------------------------------------------------------
+<br>! Input Arguments
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; IS,JS&nbsp;&nbsp;&nbsp; starting i,j
+indices from the full horizontal grid
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; IX, IY&nbsp;&nbsp; Horizontal dimensions
+for global storage arrays
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; TEMP&nbsp;&nbsp;&nbsp;&nbsp; Temperature
+(Deg K) at full model levels
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(dimensioned IDIM x JDIM x kx)
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; QMIX&nbsp;&nbsp;&nbsp;&nbsp; Mixing
+Ratio at full model levels
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(dimensioned IDIM x JDIM x kx)
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; RHUM&nbsp;&nbsp;&nbsp;&nbsp; Relative
+humidity fraction at full model levels
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(dimensioned IDIM x JDIM x kx)
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; OMEGA&nbsp;&nbsp; Pressure vertical
+velocity at full model levels
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(dimensioned IDIM x JDIM x kx)
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LGSCLDELQ&nbsp; Averaged rate of change
+in mix ratio due to lg scale precip
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+at full model levels
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(dimensioned IDIM x JDIM x kx)
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; CNVCNTQ&nbsp; Accumulated count of
+change in mix ratio due to conv precip
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+at full model levels
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(dimensioned IDIM x JDIM x kx)
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; convprc Accumulated conv precip rate
+summed over all
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+full model levels (mm/day )
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(dimensioned IDIM x JDIM)
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; PFULL&nbsp;&nbsp;&nbsp; Pressure at
+full model levels
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(dimensioned IDIM x JDIM x kx)
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; PHALF&nbsp;&nbsp;&nbsp; Pressure at
+half model levels
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(dimensioned IDIM x JDIM x kx+1)
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; PSFC&nbsp;&nbsp;&nbsp;&nbsp; Surface
+pressure field
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(dimensioned IDIM x JDIM)
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; COSZEN&nbsp;&nbsp;&nbsp;&nbsp; cosine
+of the zenith angle
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(dimensioned IDIM x JDIM)
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; TIME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+time of year (time_type)
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LAT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+latitudes in radians, dimensioned by (1xJDIM)
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; KBOT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+OPTIONAL; lowest model level index array
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(dimensioned IDIM x JDIM)
+<br>&nbsp;!---------------------------------------------------------------------
+<br>integer, intent(in)&nbsp;&nbsp; ::&nbsp; is,js
+<br>&nbsp;type(time_type), intent(in)&nbsp; :: time
+<br>&nbsp;real, intent(in)&nbsp; :: lat(:,:)
+<br>&nbsp;real, intent(in), dimension (:,:,:) ::&nbsp; temp,qmix,rhum,omega
+<br>&nbsp;real, intent(in), dimension (:,:,:) ::&nbsp; lgscldelq,cnvcntq,pfull,
+phalf
+<br>&nbsp;real, intent(in), dimension (:,:)&nbsp;&nbsp; ::&nbsp; convprc,psfc,
+coszen
+<p>&nbsp;integer, intent(in), OPTIONAL, dimension(:,:) :: kbot
+<p>!---------------------------------------------------------------------
+<br>! Output Arguments
+<p>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; OUTPUT
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ------
+<p>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; NCLDS&nbsp;&nbsp; number of (random
+overlapping) clouds in column and also
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+the current # for clouds to be operating on
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(dimensioned IDIM x JDIM )
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; CLDTOP&nbsp;&nbsp; index of cloud tops
+(at cloud levels)
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(dimensioned IDIM x JDIM x kx)
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; CLDBAS&nbsp;&nbsp; index of cloud bottoms
+(at cloud levels)
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(dimensioned IDIM x JDIM x kx)
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; CLDAMT&nbsp;&nbsp; cloud amount (fraction)
+(at cloud levels)
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(dimensioned IDIM x JDIM x kx)
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; R_UV&nbsp;&nbsp;&nbsp;&nbsp; fractional
+amount of ultraviolet radiation
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+reflected by the clouds (at cloud levels)
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; R_NIR fractional amount of near inrared
+radiation
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+reflected by the clouds (at cloud levels)
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; AB_UV fractional amount of ultraviolet
+radiation
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+absorbed by the clouds (at cloud levels)
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; AB_NIR fractional amount of near inrared
+radiation
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+absorbed by the clouds (at cloud levels)
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; EM_LW emissivity for the clouds (at
+cloud levels)
+<br>!---------------------------------------------------------------------
+<br>integer, intent(out), dimension(:,:,:) :: cldtop,cldbas
+<br>integer, intent(out), dimension(:,:)&nbsp; ::&nbsp; nclds
+<p>&nbsp;real, intent(out), dimension(:,:,:) :: r_uv,r_nir,ab_uv,ab_nir,em_lw
+<br>&nbsp;real, intent(out), dimension(:,:,:) :: cldamt
+<br>&nbsp;
+<p><b>call diag_cloud_sum(is,js, &amp;</b>
+<br><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+temp,qmix,rhum,omega,lgscldelq,cnvcntq,convprc,kbot)</b>
+<br>!---------------------------------------------------------------------
+<br>! Input Arguments
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; IS,JS&nbsp;&nbsp;&nbsp; starting i,j
+indices from the full horizontal grid
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; TEMP&nbsp;&nbsp;&nbsp;&nbsp; Temperature
+(Deg K) at full model levels
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(dimensioned IDIM x JDIM x kx)
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; QMIX&nbsp;&nbsp;&nbsp;&nbsp; Mixing
+Ratio at full model levels
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(dimensioned IDIM x JDIM x kx)
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; RHUM&nbsp;&nbsp;&nbsp;&nbsp; Relative
+humidity fraction at full model levels
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(dimensioned IDIM x JDIM x kx)
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; OMEGA&nbsp;&nbsp; Pressure vertical
+velocity at full model levels
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(dimensioned IDIM x JDIM x kx)
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LGSCLDELQ&nbsp; Averaged rate of change
+in mix ratio due to lg scale precip
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+at full model levels
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(dimensioned IDIM x JDIM x kx)
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; CNVCNTQ&nbsp; Accumulated count of
+change in mix ratio due to conv precip
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+at full model levels
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(dimensioned IDIM x JDIM x kx)
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; CONVPRC Accumulated conv precip rate
+summed over all
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+full model levels (mm/day )
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(dimensioned IDIM x JDIM)
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; KBOT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+OPTIONAL; lowest model level index array
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(dimensioned IDIM x JDIM)
+<br>! ******* kbot will be used to select only those qmix values that are
+really
+<br>! ******* needed (typically this will be the bottom level except for
+<br>! ******* step mountains
+<br>!-----------------------------------------------------------------------
+<br>&nbsp;integer, intent(in)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+:: is,js
+<br>&nbsp;real, intent(in), dimension (:,:,:) ::&nbsp; temp,qmix,rhum,omega
+<br>&nbsp;real, intent(in), dimension (:,:,:) ::&nbsp; lgscldelq,cnvcntq
+<br>&nbsp;real, intent(in), dimension (:,:)&nbsp;&nbsp; ::&nbsp; convprc
+<p>&nbsp;integer, intent(in), OPTIONAL, dimension(:,:) :: kbot
+<br>&nbsp;
+<p>&nbsp;<b>call diag_cloud_avg (is, js, temp,qmix,rhum,omega, &amp;</b>
+<br><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+lgscldelq,cnvcntq,convprc,ierr)</b>
+<br>!-----------------------------------------------------------------------
+<br>! Input Arguments
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; IS,JS&nbsp;&nbsp;&nbsp; starting i,j
+indices from the full horizontal grid
+<br>!-----------------------------------------------------------------------
+<br>&nbsp;integer, intent(in)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+:: is, js
+<br>!!-----------------------------------------------------------------------
+<br>! Input/Output Arguments
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; TEMP&nbsp;&nbsp;&nbsp;&nbsp; Temperature
+(Deg K) at full model levels
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(dimensioned IDIM x JDIM x kx)
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; QMIX&nbsp;&nbsp;&nbsp;&nbsp; Mixing
+Ratio at full model levels
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(dimensioned IDIM x JDIM x kx)
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; RHUM&nbsp;&nbsp;&nbsp;&nbsp; Relative
+humidity fraction at full model levels
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(dimensioned IDIM x JDIM x kx)
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; OMEGA&nbsp;&nbsp; Pressure vertical
+velocity at full model levels
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(dimensioned IDIM x JDIM x kx)
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LGSCLDELQ&nbsp; Averaged rate of change
+in mix ratio due to lg scale precip
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+at full model levels
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(dimensioned IDIM x JDIM x kx)
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; CNVCNTQ&nbsp; Accumulated count of
+change in mix ratio due to conv precip
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+at full model levels
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(dimensioned IDIM x JDIM x kx)
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; CONVPRC Accumulated conv precip rate
+summed over all
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+full model levels (mm/day )
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+(dimensioned IDIM x JDIM)
+<br>-----------------------------------------------------------------------
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; real, intent(inout), dimension(:,:,:)
+:: temp,qmix,rhum,omega
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; real, intent(inout), dimension(:,:,:)
+:: lgscldelq,cnvcntq
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; real, intent(inout), dimension(:,:)&nbsp;&nbsp;
+:: convprc
+<br>!-----------------------------------------------------------------------
+<br>! Output Argument
+<br>!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; IERR&nbsp;&nbsp;&nbsp;&nbsp; Error
+flag
+<br>!-----------------------------------------------------------------------
+<br>&nbsp;&nbsp; integer, intent(out)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+:: ierr
+<br>&nbsp;
+<br>&nbsp;
+<p><b>call diag_cloud_end ()</b>
+<br>there are no arguments to this routine
+<br><!-- END ROUTINES --><!---------------------------------------------------------------------><a NAME="NAMELIST"></a>
+<hr>
+<h4>
+NAMELIST</h4>
+<!-- BEGIN NAMELIST -->
+<pre>&amp;diag_cloud_nml</pre>
+
+<pre>!&nbsp;&nbsp;&nbsp;&nbsp; RHC -&nbsp;&nbsp;&nbsp; critical humidity value (ras = 0.8 - 0.84, mca =0.7)
+!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (note:&nbsp; in vers >= 0.9.3 a function of 3 levels
+!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; i.e.,"high" , "mid", "low" - but here is more general)
+!&nbsp;&nbsp;&nbsp;&nbsp; PBOUNDS - sets pressure bounds for RHC (dimension = size(rhc) - 1
+!&nbsp;&nbsp;&nbsp;&nbsp; DO_AVERAGE - logical flag for time averaging cloud predictor variables
+!&nbsp;&nbsp;&nbsp;&nbsp; LQUADRA - logical switch for turning on quadratic relation
+!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; for calculating rhum clouds from rhum,
+!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; i.e., true for quadratice scheme, false for linear scheme
+!&nbsp;&nbsp;&nbsp;&nbsp; LRHCNV - logical switch for using rhum fields as follows:
+!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if true - use rel humidities modified for presence of&nbsp;
+!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; convective clouds (rhumcnv), otherwise use original&nbsp;
+!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; rel humidities (rhum)
+!&nbsp;&nbsp;&nbsp;&nbsp; LOMEGA - logical switch for turning on omega correction to rhum&nbsp;
+!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; clouds - true for omega correction, otherwise false&nbsp;
+!&nbsp;&nbsp;&nbsp;&nbsp; LCNVCLD - logical switch for turning on calculation of deep convective&nbsp;
+!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; clouds - true for deep convective clouds, otherwise false&nbsp;
+!&nbsp;&nbsp;&nbsp;&nbsp; L_THEQV - logical switch for turning on calculation of shallow convective&nbsp;
+!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; clouds - true for shallow convective clouds, otherwise false&nbsp;
+!&nbsp;&nbsp;&nbsp;&nbsp; LINVERS - logical switch for turning on calculation of marine stratus&nbsp;
+!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; clouds - true for marine stratus, otherwise false&nbsp;
+!&nbsp;&nbsp;&nbsp;&nbsp; LSLINGO - logical variable = true apply Slingo marine stratus&nbsp;
+!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; scheme, otherwise = false.&nbsp;
+!&nbsp;&nbsp;&nbsp;&nbsp; LREGRSC - logical variable = true apply Tim Li marine stratus&nbsp;
+!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; scheme, otherwise = false. Slingo &amp; Li schemes may be
+!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; used in combination, but atleast one scheme must be used.&nbsp;
+!&nbsp;&nbsp;&nbsp;&nbsp; LTHICK_HIGH - logical variable = true -> allow possibility of raising
+!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; high cloud tops one sigma level to increase their thickness
+!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; from 1 to nmax levels; otherwise they remain thin&nbsp;
+!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (1 level)
+!&nbsp;&nbsp;&nbsp;&nbsp; LTHICK_MID - logical variable = true -> allow possibility of raising
+!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; mid cloud tops one sigma level to increase their thickness
+!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; from 1 to nmax levels; otherwise they remain thin&nbsp;
+!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (1 level)
+!&nbsp;&nbsp;&nbsp;&nbsp; LTHICK_LOW - logical variable = true -> allow possibility of raising
+!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; low cloud tops one sigma level to increase their thickness
+!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; from 1 to nmax levels; otherwise they remain thin&nbsp;
+!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (1 level)
+!&nbsp;&nbsp;&nbsp;&nbsp; HIGH_LEV_CLOUD_INDEX - level above which no clouds are allowed to form&nbsp;
+!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (model level index)
+!&nbsp;&nbsp;&nbsp;&nbsp; NOFOG - logical switch for not allowing rhum clouds (or fog)
+!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; to occur beneath a certain level (low_lev_cloud_index) ->&nbsp;
+!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; nofog = true
+!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; to allow clouds at the lowest model level -> nofog = false
+!&nbsp;&nbsp;&nbsp;&nbsp; LOW_LEV_CLOUD_INDEX - level below which no clouds are allowed to occur&nbsp;
+!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; when nofog = true (model level index)
+!&nbsp;&nbsp;&nbsp;&nbsp; NBAND - max number of radiative bands to be considered for some
+!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cloud properties
+!&nbsp;&nbsp;&nbsp;&nbsp; PSHALLOW - top of shallow convective layer (pressure level - n/m**2 )
+!&nbsp;&nbsp;&nbsp;&nbsp; WCUT0 - omega cutoff value for omega cloud depletion factor = 0
+!&nbsp;&nbsp;&nbsp;&nbsp; WCUT1 - omega cutoff value for omega cloud depletion factor = 1</pre>
+<!-- END NAMELIST --><!---------------------------------------------------------------------><a NAME="CHANGES"></a>
+<hr>
+<h4>
+CHANGE HISTORY</h4>
+<!-- BEGIN CHANGES -->
+<pre><b><a href=".doc.log#diag_cloud.f90">Revision history
+
+</a>changes</b> (07/13/2000)
+
+&nbsp;&nbsp;&nbsp;&nbsp; MPP version created. Minor changes for open_file, error_mesg,
+&nbsp;&nbsp;&nbsp;&nbsp; and Fortran write statements.</pre>
+<!-- END CHANGES --><!---------------------------------------------------------------------><a NAME="ERRORS"></a>
+<hr>
+<h4>
+ERROR MESSAGES</h4>
+<!-- BEGIN ERRORS -->
+<pre><b>Warning in diag_cloud_init:
+
+</b>&nbsp;&nbsp;&nbsp; No cloud restart file found; ierr = 1</pre>
+
+<pre><b>Error flag set = 1 in diag_cloud_avg:
+
+</b>&nbsp;&nbsp;&nbsp; indicates potential divide by zero in cloud predictor averaging process</pre>
+<!-- END ERRORS --><!---------------------------------------------------------------------><a NAME="REFERENCES"></a>
+<hr>
+<h4>
+REFERENCE</h4>
+<!-- BEGIN REFERENCES -->Gordon, C.T., 1992. Comparison of 30-day integrations
+with and without cloud-radiation
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+interaction. <i>Mon. Wea. Rev.</i>, 120, 1244-1277.
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<p><!-- END REFERENCES --><!---------------------------------------------------------------------><a NAME="BUGS"></a>
+<hr>
+<h4>
+KNOWN BUGS</h4>
+<!-- BEGIN BUGS -->
+<pre>&nbsp;&nbsp;&nbsp;&nbsp; There are no known bugs.
+
+</pre>
+<!-- END BUGS --><!---------------------------------------------------------------------><a NAME="NOTES"></a>
+<hr>
+<h4>
+NOTES</h4>
+<!-- BEGIN NOTES -->
+<br>&nbsp;&nbsp; Code developed by Tony Gordon &amp; Bill Stern<br>
+&nbsp;&nbsp; Original code ~ 1992.<br>
+&nbsp;&nbsp; First Fortran 90 version created by Bill Stern in September
+1999.<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp; cloud radiative properties are calculated via a call to cloud_tau_driver
+which is the driver routine for<br>
+&nbsp;&nbsp; module diag_cloud_rad_mod.&nbsp; the calling interface is:&nbsp;<br>
+<b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; call cloud_tau_driver (pfull,phalf,qmix_kx,nclds,icld,cldamt,
+&amp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+cldtop, cldbas,delp_true,tempcld, &amp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+lhight,lhighb, lmidt, lmidb, llowt,lk, &amp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+r_uv,r_nir,ab_uv,ab_nir,em_lw,tau, coszen, psfc )</b><br>
+<br>
+<br>
+<br>
+<!---------------------------------------------------------------------><a NAME="PLANS"></a>
+<hr>
+<h4>
+FUTURE PLANS</h4>
+<!-- BEGIN PLANS -->
+<pre>&nbsp;&nbsp;&nbsp;&nbsp; Complete marine stratus code
+
+</pre>
+<!-- END PLANS --><!--------------------------------------------------------------------->
+<hr>
+<br>&nbsp;
+</body>
+</html>

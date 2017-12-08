@@ -1,0 +1,469 @@
+BEGSIM
+output_unit_number = 7
+output_file        = AM4_isop_noSOA.doc
+procout_path       = ../output/
+src_path           = ../bkend/
+sim_dat_path       = ../output/
+sim_dat_filename   = sim.dat
+
+Comments
+     "This is a mozart2 chemical solver with :"
+     " (1) New isoprene chemistry"
+     "     added species: CH3OH, C2H5OH, GLYALD, HYAC, EO2, EO, HYDRALD"
+     " (2) Sulfate chemistry"
+     " (3) Stratospheric chemistry"
+     " (4) Updated to JPL (2011)"
+     " (5) Removed ClNO2"
+     " (6) Merged in some updates from Horowitz et al. [2007]"
+     " (7) Also have ozone strat tracer"
+     " (8) In 2.7d, I added photolysis for alkyl nitrates.
+     " (9) Terpene chemistry must be here to get its tendency for SOA.
+     " (10) all reactions are renamed here.
+     " (11) this version also includes update from JPL-11.
+     " (12) updates isopnb + O3 rate from 1.06e-16 to 3.7e-19.
+     " (13) update MVK chemistry based on Praske et al. 2015.
+     " (14) reduce yield of glyx from isopo2 isomerization, there was an imbalance on C.
+     " (15) update RO2 + HO2 reaction based on Bates et al. 2015 JPC.
+     " (16) details are described on wiki (page new isoprene chemistry)
+End Comments
+
+      SPECIES
+
+      Solution
+ O3, O, O1D ->  O, N2O, N, NO, NO2, NO3, HNO3, HO2NO2, N2O5, CH4, CH3O2
+ CH3OOH, CH2O, CO, OH, HO2, H2O2, C3H6, ISOP -> C5H8, PO2 -> C3H6OHO2, CH3CHO
+ POOH -> C3H6OHOOH, CH3CO3, CH3COOOH, PAN -> CH3CO3NO2
+ C2H6, C2H4, C4H10, MPAN -> CH2CCH3CO3NO2
+ ISOPO2 -> HOCH2COOCH3CHCH2, MVK -> CH2CHCOCH3, MACR -> CH2CCH3CHO
+ MACRO2 -> CH3COCHO2CH2OH, MACROOH -> CH3COCHOOHCH2OH
+ C2H5O2, C2H5OOH, C10H16
+ C3H8, C3H7O2, C3H7OOH, CH3COCH3
+ CH3OH, C2H5OH, GLYALD -> HOCH2CHO, HYAC -> CH3COCH2OH, EO2 -> HOCH2CH2O2
+ EO -> HOCH2CH2O
+ ISOPOOH -> HOCH2COOHCH3CHCH2
+ H2
+ SO2, SO4, DMS -> CH3SCH3, NH3, NH4NO3, NH4
+ HCl, HOCl, ClONO2, Cl, ClO, Cl2O2, Cl2, HOBr, HBr, BrONO2, Br, BrO, BrCl
+ LCH4 -> CH4, H, H2O
+ ROH->C3H7OH,RCHO->C2H5CHO
+ ISOPNB->HOCH2C(CH3)=CHCH2ONO2 
+ ISOPNBO2, MACRN->HC(O)C(CH3)=CHCOOH 
+ MVKN->HC(O)C(CH3)=CHCOOH, R4N2
+ MEK,R4N1, IEPOX,IEPOXOO,GLYX
+ MGLY -> CH3COCHO
+ MVKO2, MVKOOH, MACRNO2
+ MAO3, MAOP, MAOPO2, ATO2
+ ATOOH,INO2, INPN, ISNOOA, ISN1,O3S -> O3
+      End Solution
+
+      Fixed
+ M, N2, O2
+      End Fixed
+
+      Col-int
+ O3 = 0.
+ O2 = 0.
+      End Col-int
+
+   End SPECIES
+
+   Solution Classes
+      Explicit
+       N2O, CH4, CO, C2H6, C3H8, H2
+       H2O, O3S
+      End Explicit
+      Implicit
+       O3, O1D, O, N, NO, NO2, NO3, HNO3, HO2NO2, N2O5, CH3O2
+       CH3OOH, CH2O, OH, HO2, H2O2, C3H6, ISOP, PO2, CH3CHO
+       POOH, CH3CO3, CH3COOOH, PAN, C2H4, C4H10, MPAN
+       ISOPO2, MVK, MACR, MACRO2, MACROOH
+       C2H5O2, C2H5OOH, C10H16
+       C3H7O2, C3H7OOH, CH3COCH3
+       CH3OH, C2H5OH, GLYALD, HYAC, EO, EO2
+       INO2, INPN, ISNOOA, ISN1
+       ISOPOOH
+       SO2, SO4, DMS, NH3, NH4NO3, NH4
+       HCl, HOCl, ClONO2, Cl, ClO, Cl2O2, Cl2
+       HOBr, HBr, BrONO2, Br, BrO, BrCl, LCH4, H
+       ROH,RCHO
+       ISOPNB
+       ISOPNBO2, MACRN, MVKN, R4N2
+       MEK,R4N1, IEPOX,IEPOXOO,GLYX
+       MGLY
+       MVKO2, MVKOOH,MACRNO2
+       MAO3,MAOP, MAOPO2, ATO2
+       ATOOH
+      End Implicit
+   End Solution Classes
+
+ CHEMISTRY
+      Photolysis
+ [jo2] O2 + hv -> 2*O
+ [jo1d] O3 + hv -> O1D + O2
+ [jo3p] O3 + hv -> O + O2
+ [jn2o] N2O + hv -> O1D + N2
+ [jno] NO + hv -> N + O
+ [jno2] NO2 + hv -> NO + O
+ [jn2o5] N2O5 + hv -> NO2 + NO3
+ [jhno3] HNO3 + hv -> NO2 + OH
+ [jno3] NO3 + hv -> .89*NO2 + .11*NO + .89*O
+ [jho2no2] HO2NO2 + hv -> NO2 + HO2
+ [jch3ooh] CH3OOH + hv -> CH2O + HO2 + OH
+ [jch2o_a] CH2O + hv -> CO + HO2 + H
+ [jch2o_b] CH2O + hv -> CO + H2
+ [jh2o] H2O + hv -> OH + H
+ [jh2o2] H2O2 + hv -> 2*OH
+ [jch3cho] CH3CHO + hv -> CH3O2 + CO + HO2       
+ [jpooh] POOH + hv -> CH3CHO + CH2O + HO2 + OH 
+ [jch3co3h] CH3COOOH + hv -> CH3O2 + OH  + CO2    
+ [jpan] PAN + hv -> .6*CH3CO3 + .6*NO2 + .4*CH3O2 + .4*NO3
+ [jmpan] MPAN + hv -> MAO3 + NO2
+ [jmacr_a] MACR -> 1.34 * HO2 + .66 * MAO3 + 1.34 * CH2O + 1.34 * CH3CO3
+ [jmacr_b] MACR -> .66 * OH + 1.34 * CO
+ [jmvk] MVK + hv -> .7 * C3H6 + .7 * CO + .3 * CH3O2 + .3 * CH3CO3
+ [jc2h5ooh] C2H5OOH + hv -> CH3CHO + HO2 + OH
+ [jc3h7ooh] C3H7OOH + hv -> 0.82 * CH3COCH3 + OH + HO2
+ [jacet] CH3COCH3 + hv -> CH3CO3 + CH3O2
+ [jmgly] MGLY + hv -> CH3CO3 + CO + HO2
+ [jglyoxal] GLYX + hv -> 2.0*CO + 2.0*HO2
+ [jisopooh] ISOPOOH + hv -> .402 * MVK + .288 * MACR + .69 * CH2O + HO2
+ [jhyac] HYAC + hv -> CH3CO3 + HO2 + CH2O
+ [jglyald] GLYALD + hv -> 2 * HO2 + CO + CH2O
+ [jisopnb] ISOPNB + hv -> RCHO + NO2 + HO2
+ [jmacrn] MACRN + hv -> NO2 + HYAC + MGLY + .5*CH2O + HO2 + .5*CO 
+ [jmvkn] MVKN + hv -> GLYALD + NO2 + CH3CO3 
+ [jr4n2] R4N2 + hv ->  NO2 + .32*CH3COCH3 + .19*MEK + .18*CH3O2 + .27*HO2 + .32*CH3CHO + .13*RCHO 
+ [jclono2] ClONO2 + hv -> Cl + NO3
+ [jhocl] HOCl + hv -> OH + Cl
+ [jcl2o2] Cl2O2 + hv -> 2*Cl + O2
+ [jbrono2] BrONO2 + hv -> Br + NO3
+ [jhobr] HOBr + hv -> OH + Br
+ [jbrcl] BrCl + hv -> Br + Cl
+ [jbro] BrO + hv -> Br + O
+ [jcl2] Cl2 + hv -> 2 * Cl
+      End Photolysis 
+      Reactions
+ [uo_o2] O + O2 + M -> O3 + M
+        O + O3 -> 2*O2                         ; 8e-12, -2060
+         N + O2 -> NO + O		       ; 1.5e-11, -3600
+         N + NO -> N2 + O		       ; 2.1e-11, 100
+ [uco_oha] CO + OH + M -> CO2 + HO2       ; 5.9e-33,1.4, 1.1e-12,-1.3, .6
+ [uco_ohb] CO + OH -> CO2 + H             ; 1.5e-13,-0.6, 2.1e9,-6.1, .6
+         H2 + O1D -> HO2 + OH                   ; 1.2e-10
+*        O + OH -> HO2 + O2                     ; 2.2e-11, 120
+         O + OH -> H + O2                       ; 1.8e-11, 180
+         HO2 + O -> OH + O2                     ; 3e-11, 200
+ [ol_oh] OH + O3 -> HO2 + O2                    ; 1.7e-12, -940
+ [ol_ho2] HO2 + O3 -> OH + 2*O2                  ; 1e-14, -490
+ [uho2_ho2]  HO2 + HO2 -> H2O2
+         H2O2 + OH -> H2O + HO2                 ; 1.8e-12
+         OH + HO2 -> H2O + O2                   ; 4.8e-11, 250
+         OH + OH -> H2O + O                     ; 1.8e-12
+         H2 + OH -> H2O + HO2                   ; 2.8e-12, -1800
+ [o1d_n2] O1D + N2 -> O + N2                   ; 2.15e-11, 110
+ [o1d_o2] O1D + O2 -> O + O2                   ; 3.3e-11, 55
+ [ol_o1d] O1D + H2O -> 2*OH                     ; 1.63e-10, 60
+         N2O + O1D -> 2*NO                     ; 7.25e-11, 20
+         N2O + O1D -> N2 + O2                  ; 4.63e-11, 20
+ [op_ho2] NO + HO2 -> NO2 + OH                  ; 3.3e-12, 270
+         NO + O3 -> NO2 + O2                   ; 3e-12, -1500
+         NO2 + O -> NO + O2                    ; 5.1e-12, 210
+         NO2 + O3 -> NO3 + O2                  ; 1.2e-13, -2450
+         NO3 + HO2 -> OH + NO2                 ; 3.5e-12
+ [uno2_no3]  NO2 + NO3 + M -> N2O5 + M       ; 2.e-30,4.4, 1.4e-12,.7, .6
+ [un2o5]  N2O5 + M -> NO2 + NO3 + M
+         N2O5 + H2O -> 2*HNO3                   ; 0.
+ [uoh_no2] NO2 + OH + M -> HNO3 + M        ; 1.8e-30,3.0, 2.8e-11,0., .6
+ [uoh_hno3] HNO3 + OH -> NO3 + H2O
+        NO3 + NO -> 2*NO2                      ; 1.5e-11, 170
+ [uho2_no2] NO2 + HO2 + M -> HO2NO2 + M     ; 2.0e-31,3.4, 2.9e-12,1.1, .6
+        HO2NO2 + OH -> H2O + NO2 + O2          ; 1.3e-12, 380
+ [uhno4] HO2NO2 + M -> HO2 + NO2 + M
+        CH4 + OH -> CH3O2 + H2O + LCH4         ; 2.45e-12, -1775
+        CH4 + O1D -> .75 * CH3O2 + .75 * OH + .25 * CH2O  ; 1.5e-10
+                     + .2 * HO2 + .2 * H + .05 * H2
+ [op_mo2] CH3O2 + NO -> CH2O + NO2 + HO2         ; 2.8e-12, 300
+         CH3O2 + CH3O2 -> 2 * CH2O + 2 * HO2    ; 6.03e-13,-453
+         CH3O2 + CH3O2 -> CH2O + CH3OH          ; 2.30e-14,677
+         CH3O2 + HO2 -> CH3OOH + O2             ; 4.1e-13, 750
+         CH3OOH + OH -> .7 * CH3O2 + .3 * OH + .3 * CH2O + H2O ; 3.8e-12, 200
+         CH2O + NO3 -> CO + HO2 + HNO3          ; 3.4e-13, -1900
+         CH2O + OH -> CO + H2O +HO2             ; 5.5e-12,125
+ [uoh_c2h4] OH + C2H4 + M -> .75*EO2 + .5*CH2O + .25*HO2 + M               ; 1.e-28,4.5, 7.5e-12,0.85, .6
+ [op_eo2] EO2 + NO -> EO + NO2                        ; 4.2e-12,180
+	     EO  + O2 -> GLYALD + HO2                    ; 1.e-14
+	     EO       -> 2 * CH2O + HO2                  ; 1.6e11,-4150
+ [ol_c2h4] C2H4 + O3 -> CH2O + .12 * HO2 + .5 * CO     ; 1.2e-14, -2630
+                      + .12 * OH 
+ [uoh_c3h6] C3H6 + OH + M -> PO2 + M       ; 8.e-27,3.5, 3.e-11,0, .5
+ [ol_c3h6] C3H6 + O3 ->.4*CH3CHO+.244*OH+.244*HO2	     ;5.50E-15,-1880
+		+.42*CO+.58*CH2O+.036*CH3OH
+         C3H6 + NO3 -> R4N2                     ; 4.6e-13,-1156
+ [op_po2] PO2 + NO -> CH3CHO + CH2O + HO2 + NO2  ; 2.7e-12, 350
+         PO2 + HO2 -> POOH + O2                 ; 7.5e-13, 700
+	     POOH + OH -> .791*OH+.209*PO2+.791*RCHO; 8.78E-12,200
+	     CH3CHO + OH->H2O + .95*CH3CO3		    ; 4.63E-12, 350   
+			       + .05*CH2O + .05*CO + .05*HO2
+         CH3CHO + NO3 -> CH3CO3 + HNO3          ; 1.4e-12, -1900
+ [op_ch3co3] CH3CO3 + NO -> CH3O2 + CO2 + NO2       ; 8.1e-12, 270
+ [upan_f]CH3CO3 + NO2 + M -> PAN + M            ; 9.7e-29,5.6, 9.3e-12,1.5, .6
+	     CH3CO3 + HO2 -> .15* O3 + .44* OH		 ; 5.2e-13, 980
+			 + .44*CH3O2 + .41*CH3COOOH
+         CH3CO3 + CH3O2 -> .9*CH3O2 + CH2O + .9*HO2 + .9*CO2        ; 2.0e-12,500
+         CH3COOOH + OH -> .5*CH3CO3 + .5*CH2O + .5*OH 	           ; 3.80e-12, 200
+ [upan_b]PAN + M -> CH3CO3 + NO2 + M
+         CH3CO3 + CH3CO3 -> 2*CH3O2 + 2*CO2                             ; 2.5e-12, 500
+         C2H6 + OH -> C2H5O2 + H2O              			; 7.66e-12, -1020
+ [op_c2h5o2] C2H5O2 + NO -> CH3CHO + HO2 + NO2      ; 2.6e-12, 365
+         C2H5O2 + HO2 -> C2H5OOH + O2           ; 7.5e-13, 700
+         C2H5O2 + CH3O2 -> .75 * CH2O + .75 * CH3CHO + HO2  ; 3.e-13
+	                   + .25 * CH3OH + .25 * C2H5OH
+         C2H5O2 + C2H5O2 -> 2 * CH3CHO + 2 * HO2			; 4.1e-14
+         C2H5OOH + OH -> .36 * C2H5O2 + .64 * CH3CHO + .64 * OH         ; 5.18e-12, 200
+         C4H10 + OH -> C3H7O2                   	     		; 1.55e-11, -540
+         C3H8 + OH -> C3H7O2 + H2O      ; 8.7e-12, -615
+ [op_c3h7o2] C3H7O2 + NO -> .82 * CH3COCH3 + NO2 + HO2 + .27 * CH3CHO  ; 4.2e-12, 180
+         C3H7O2 + HO2 -> C3H7OOH + O2                              ; 7.5e-13, 700
+         C3H7O2 + CH3O2 -> CH2O + HO2 + .82 * CH3COCH3             ; 3.75e-13, -40
+         C3H7OOH + OH -> H2O + C3H7O2                              ; 3.8e-12, 200
+ [uoh_acet] CH3COCH3 + OH -> ATO2 + H2O
+         OH + CH3OH -> HO2 + CH2O               ; 2.9e-12,-345
+         OH + C2H5OH -> HO2 + CH3CHO            ; 6.9e-12,-230
+	     ISOP + OH -> ISOPO2                                            ; 3.10E-11, 350
+ 	     ISOPO2 -> HO2 + CH2O + .25*MGLY + .5*GLYALD + 0.25*GLYX        ; 4.07E+08,-7694 
+                      + .5*HYAC + OH 
+ [ol_isop] ISOP + O3 -> .325*MACR + .244*MVK + .845*CH2O + .11*H2O2       ; 1.00e-14, -1970
+		              + .522*CO + .199*CH3CO3 + .026*HO2
+                      + .27*OH + .128*C3H6 + .051*CH3O2
+ [op_isopo2] ISOPO2 + NO -> .90*NO2 + .90*HO2 + .90*CH2O + .55*MVK         ; 2.7E-12, 350
+		              + .35*MACR + .10*ISOPNB 
+         ISOPO2 + HO2 -> .937*ISOPOOH + .063*OH + .025*MACR + .038*MVK    ; 2.06E-13, 1300
+                      + .063*HO2 + .063*CH2O
+	     ISOPO2 + CH3O2 -> 1.1*HO2 + 1.22*CH2O + .28*MVK + .18*MACR     ; 8.37E-14
+		              + .3*RCHO + .24*CH3OH + .24*ROH
+         ISOPO2 + ISOPO2 -> 1.28*HO2 + .92*CH2O + .56*MVK + .36*MACR	; 1.54E-13
+		              + .48*ROH + .5*RCHO
+  	     ISOPNB + OH -> ISOPNBO2                                        ; 3.61E-12, 380
+ [op_isopnbo2] ISOPNBO2 + NO -> .09*GLYALD + .09*HYAC + .69*CH2O   ; 2.4e-12, 360.
+                  + 0.88*NO2 + .44*MACRN + .69*HO2 + .26*MVKN
+                  + 0.42*HNO3
+          ISOPNBO2 + HO2 -> .06*GLYALD + .06*HYAC + .44*CH2O  ; 8.7e-14, 1650.
+                   + .28*MACRN + .16*MVKN + .06*NO2 + .44*HO2
+                   + .5*OH + .5*HNO3
+ [ol_isopnb] ISOPNB + O3 -> .61*MVKN + .39*MACRN + .27*OH + CH2O        ; 3.7E-19
+         ISOPOOH + OH -> .387*ISOPO2 + .613*OH + .613*RCHO              ; 4.75E-12, 200
+         ISOPOOH + OH -> OH + IEPOX                                     ; 1.90E-11, 390
+         IEPOX + OH -> IEPOXOO                                          ; 5.78E-11, -400
+         IEPOXOO + HO2 -> .725*HYAC + .275*GLYALD + .275*GLYX		    ; 2.06E-13, 1300
+		        + .275*MGLY + 1.125*OH + .825*HO2
+		        + .375*CH2O + .251*CO
+[op_iepoxo2] IEPOXOO + NO -> .725*HYAC + .275*GLYALD + .275*GLYX		    ; 2.70E-12, 350
+		        + .275*MGLY + .125*OH + .825*HO2 
+                        + .375*CH2O + .251*CO + NO2
+         MVK + OH -> MVKO2                                              ; 2.6E-12, 610
+[ol_mvk] MVK + O3 -> .202*OH + .202*HO2 + .535*CO          ; 8.5E-16, -1520
+                   + .05*CH3CHO + .95*MGLY + .05*CH2O                   
+[op_mvko2] MVKO2 + NO -> .965*NO2 + .249*HO2 + .249*CH2O                     ; 2.7E-12, 350
+                   + .716*CH3CO3 + .716*GLYALD + .249*MGLY + .035*MVKN
+         MVKO2 + HO2 -> .38*MVKOOH + .62*OH + .37*GLYALD + .37*CH3CO3  ; 1.82E-13, 1300
+                   + .13*MEK + .25*HO2 + .12*CH2O + .12*MGLY 
+                   + .033*RCHO
+         MVKO2 + CH3O2 -> .14*HO2 + .14*CH2O + .36*CH3CO3 + .36*GLYALD  ; 8.37E-14
+		    + .14*MGLY + .25*MEK + .75*CH2O + .25*CH3OH 
+		    + .25*ROH + .5*HO2
+	     MVKOOH + OH -> .791*OH + .791*MEK + .209*MVKO2			; 8.78E-12, 200
+	     MVKN + OH ->  NO3 + .65*MGLY + .35*CH2O		; 1.6E-12
+	     MACR + OH -> .45*MAO3 + .55*MACRO2				; 8.00E-12, 380
+         MACRO2 -> CO + HYAC + OH 					; 2.90E+07, -5297 
+[ol_macr] MACR + O3 -> .261*OH + .202*HO2 + .569*CO         ; 1.40E-15, -2100
+                      + .88*MGLY + 0.12*CH2O 
+	     MACR + NO3 -> MAO3 + HNO3			; 3.4E-15
+[op_macro2] MACRO2 + NO -> .97*NO2 + .97*HO2 + .97*HYAC	        ; 2.7E-12, 350
+		      + .97*CO + .03*MACRN
+         MACRO2 + HO2 -> .42*MACROOH+.58*OH+.58*HYAC+.58*CO +.58*HO2	; 1.82E-13, 1300
+         MACRO2 + CH3O2 -> .595*HYAC + .255*MGLY + .595*CO		; 8.37E-14
+		       + 1.255*CH2O + 1.7*HO2 + .15*ROH
+         MACROOH + OH -> MACRO2						; 1.84E-12, 200
+         MACROOH + OH -> HYAC + OH				    ; 4.40E-12, 380
+         MACRN + OH -> MACRNO2						; 3.20E-12
+[op_macrno2] MACRNO2 + NO -> .08*CH2O				    ; 2.7E-12, 350
+			 + .15*NO3 	
+			 + .07*MGLY + .85*HYAC + 1.85*NO2 
+         MACRNO2 + HO2 -> .08*CH2O + .15*NO3    	; 1.82E-13, 1300
+			 + .07*MGLY + .85*HYAC + .85*NO2 + OH
+[op_mao3] MAO3 + NO -> NO2 + .5*CH2O + .5*CO + .5*CH3O2		; 6.7E-12, 340 
+		       + .5*CH3CO3
+         MAO3 + HO2 -> .44*OH + .15*O3 + .59*CH2O + .39*CH3O2           ; 4.3E-13, 1040
+                       + .41*MAOP + .39*CO
+         MAO3 + CH3O2 -> CH2O + HO2 + CH2O + CH3CO3			; 1.68E-12, 500
+         MAO3 + CH3O2 -> CH2O				        ; 1.87E-13, 500
+[umpan_f]	 MAO3 + NO2 + M -> MPAN + M				    ; 9.0e-28,8.9, 7.7e-12,.2, .6				
+[umpan_b]	 MPAN -> MAO3+NO2							
+         MAOP + OH -> MAO3						        ; 6.13E-13, 200
+         MAOP + OH -> MAOPO2						    ; 3.60E-12, 380
+         MAOPO2 + HO2 -> HYAC + 2*OH	    			; 1.82E-13, 1300
+         MAOPO2 + CH3O2 -> .7*HYAC  + .7*OH   			; 8.37E-14
+			 + CH2O + .7*HO2 + .3*C2H5OH
+[op_maopo2] MAOPO2 + NO -> HYAC + OH + NO2			    	; 2.35E-12, 350
+         MAOPO2 + NO -> HNO3						    ; 0.35E-12, 350
+[op_ato2] ATO2 + NO -> .96*NO2 + .96*CH2O + .96*CH3CO3 + .04*R4N2	; 2.80E-12, 300         
+         ATO2 + HO2 -> .15*CH3CO3 + .15*OH + .15*CH2O + .85*ATOOH       ; 8.60E-13, 700         
+         ATOOH + OH -> ATO2 + H2O					; 2.66e-12, 200
+         ATOOH + OH -> MGLY + OH + H2O					; 1.14e-12, 200 
+         MPAN + OH -> HYAC + CO + NO2					; 2.90E-11
+         GLYALD + OH -> .8*CH2O + .8*CO + HO2 + .2*GLYX ; 1.00E-11
+         GLYX + OH -> HO2 + 2*CO					; 3.1E-12, 340
+         GLYX + NO3 -> HNO3 + HO2 + 2*CO			; 4.0E-16		
+         MGLY + OH -> CH3CO3 + CO					; 1.50E-11
+         MGLY + NO3 -> HNO3 + CO + CH3CO3				; 1.40E-12, -1860         
+         HYAC + OH -> MGLY + HO2					; 1.60E-12, 305
+         ISOP + NO3 -> INO2                                             ; 3.30E-12, -450
+[op_ino2] INO2 + NO -> .7*ISN1 + .035*MVK + .035*MACR + .07*CH2O         ; 2.70E-12, 350
+                    + .8*HO2 + 1.3*NO2 + .23*RCHO
+         INO2 + NO3 -> .7*ISN1 + .035*MVK + .035*MACR + .07*CH2O        ; 2.30E-12
+                    + .8*HO2 + 1.3*NO2 + .23*RCHO 
+         INO2 + HO2 -> .22*MVK + .015*MACR + .235*OH + .235*NO2         ; 2.06E-13, 1300
+                    + .235*CH2O + .765*INPN
+         INPN + OH -> OH + NO2 + MEK	                            ; 1.90E-11, 390
+         INPN + OH -> .36*INO2 + .64*R4N2 + .64*OH			            ; 5.18E-12, 200
+	     ISN1 + NO3 ->  ISNOOA + HNO3								; 3.15E-13, -448
+         ISNOOA + NO3 -> NO2 + R4N2 + CO +HO2   			; 4.00E-12
+	     ISNOOA + NO -> NO2 + R4N2 + CO + HO2				; 6.70E-12, 340
+     	 ISNOOA + HO2 ->     .25*RCOOH + .25*O3 + HNO3	   ; 5.20E-13, 980
+         ISN1 + O3 -> .3*R4N2 + .45*CO + .15*OH + .45*HO2 + .7*GLYX	    ; 4.15E-15, -1520
+                    + .7*OH + .7*NO2 + .7*MGLY
+         ISN1 + OH -> ISNOOA                        		            ; 7.48E-12, 410
+         R4N2 + OH -> R4N1 + H2O                            ; 1.6e-12
+         C10H16 + OH -> 1.64 * ISOPO2 + 0.1 * CH3COCH3  ; 1.2e-11, 440
+[ol_c10h16] C10H16 + O3 ->1.122 * MACR + .442*MVK + .765*O + 1.156*OH ; 5.3e-16, -530   
+         C10H16 + NO3 -> 1.7 * ISOPO2 + NO2                 ; 1.2e-12, 490
+[n2o5h] N2O5 -> 2 * HNO3
+[no3h] NO3  -> HNO3
+[ho2h] HO2  -> H2O
+[no2h] NO2 -> 0.5*HNO3 + 0.5*OH + 0.5*NO
+*         Rn -> Pb ; 2.1e-6
+*         BC1 -> BC2                             ; 7.1e-6
+*         OC1 -> OC2                             ; 7.1e-6
+          SO2 + OH + M -> SO4 + M                ; 3.3e-31,4.3, 1.6e-12,0., 0.6
+          DMS + OH -> SO2                        ; 1.2e-11,-280
+[uoh_dms] DMS + OH -> 0.75*SO2
+          DMS + NO3 -> SO2 + NO2                 ; 1.90e-13,530
+[nh3h]  NH3 -> NH4 
+          NH3 + OH -> H2O + HNO3                 ; 1.7e-12,-710
+ [strat13] H + O3 -> OH + O2                     ; 1.4e-10,-470
+ [strat14] H + O2 + M -> HO2 + M                 ; 4.4e-32,1.3, 4.7e-11,0.2, 0.6
+ [strat20] Cl + O3 -> ClO + O2                   ; 2.3e-11,-200
+ [strat21] O + ClO -> Cl + O2                    ; 2.8e-11,85
+ [strat22] ClO + NO -> NO2 + Cl                  ; 6.4e-12,290
+ [strat23] ClO + NO2 + M -> ClONO2 + M           ; 1.8e-31,3.4, 1.5e-11,1.9, 0.6
+ [strat24] O + ClONO2 -> ClO + NO3               ; 2.9e-12,-800
+ [strat25] Cl + CH4 -> HCl + CH3O2               ; 7.3e-12,-1280
+ [strat26] OH + HCl -> H2O + Cl                  ; 2.6e-12,-350
+ [strat27] Cl + HO2 -> HCl + O2                  ; 1.8e-11,170
+ [strat28] ClO + HO2 -> HOCl + O2                ; 2.7e-12,220
+ [strat29] ClO + OH -> HO2 + Cl                  ; 7.4e-12,270
+ [strat33] CH2O + Cl -> HCl +  HO2 + CO          ; 8.1e-11,-30
+ [strat35] OH + OH + M -> H2O2 + M               ; 6.9e-31,1.0, 2.6e-11,0., 0.6
+ [strat37] ClO + ClO + M -> Cl2O2 + M            ; 1.6e-32,4.5, 2.0e-12,2.4, 0.6
+ [strat38] Cl2O2 + M -> 2*ClO + M
+ [strat39] Br + O3 -> BrO + O2                   ; 1.7e-11,-800
+ [strat40] BrO + NO2 + M -> BrONO2 + M           ; 5.2e-31,3.2, 6.9e-12,2.9, 0.6
+ [strat41] BrO + ClO -> Br + Cl + O2             ; 2.3e-12,260
+ [strat42] BrO + HO2 -> HOBr + O2                ; 4.5e-12,460
+ [strat43] BrO + NO -> Br + NO2                  ; 8.8e-12,260
+ [strat44] HOBr + O -> BrO + OH                  ; 1.2e-10,-430
+ [strat45] Br + HO2 -> HBr + O2                  ; 4.8e-12,-310
+ [strat46] Br + CH2O -> HBr + HO2 + CO           ; 1.7e-11,-800
+ [strat47] HBr + OH -> Br + H2O                  ; 5.5e-12,200
+ [strat48] BrO + ClO -> BrCl + O2                ; 4.1e-13,290
+ [strat69] ClO + OH -> HCl + O2                  ; 6.0e-13,230
+ [strat58] NO2 + NO3 -> NO + NO2 + O2            ; 4.5e-14,-1260
+ [strat59] NO3 + NO3 -> 2*NO2 + O2               ; 8.5e-13,-2450
+ [strat64] NO + O + M -> NO2 + M                 ; 9.0e-32,1.5, 3.0e-11,0., 0.6
+ [strat71] N + NO2 -> N2O + O                    ; 5.8e-12,220
+ [strat72] HOCl + HCl -> H2O + Cl2
+*[strat73] N2O5 + HCl -> HNO3 + ClNO2
+ [strat73] N2O5 + HCl -> HNO3 + Cl + NO2
+ [strat74] N2O5 + H2O -> 2*HNO3
+ [strat75] ClONO2 + H2O -> HOCl + HNO3
+ [strat76] ClONO2 + HCl -> Cl2 + HNO3
+ [strat77] HOBr + HCl -> BrCl + H2O
+ [strat78] HOCl + HBr -> BrCl + H2O
+ [strat79] HOBr + HBr -> 2*Br + H2O
+ [strat80] BrONO2 + H2O -> HOBr + HNO3
+           LCH4 -> ; 3.17e-8
+   End Reactions
+
+   Heterogeneous
+   End Heterogeneous
+
+   Ext Forcing
+   End Ext Forcing
+   END CHEMISTRY
+
+   SIMULATION PARAMETERS
+
+     Spatial Dimensions
+        Longitude points = 1
+        Latitude  points = 1
+        Vertical  points = 1
+     End Spatial Dimensions
+
+     Numerical Control
+        Implicit Iterations = 11
+     End Numerical Control
+
+     Surface Flux
+     End Surface Flux
+
+     Surface Deposition
+     End Surface Deposition
+
+     Version Options
+        machine = intel
+        architecture = hybrid                                       
+        vec_ftns  = off
+        multitask = on
+	namemod = on
+	modules = on
+     End Version Options
+
+     Outputs
+       File
+        Transported Species = avrg
+        End Transported Species
+
+        Group Members = avrg
+        End Group Members
+
+        Surface Flux = avrg
+        End Surface Flux
+
+	Deposition velocity = avrg
+        End Deposition velocity
+
+	Washout Rates = avrg
+	End Washout Rates
+
+	External Forcing = avrg
+        End External Forcing
+
+        Production = avrg
+        End Production
+
+ 	Loss = avrg
+        End Loss
+
+ 	Deposition flux = avrg
+        End Deposition flux
+
+ 	Massdiags = avrg
+        End Massdiags
+
+       End File
+
+     End Outputs
+
+   END SIMULATION PARAMETERS
+
+ENDSIM

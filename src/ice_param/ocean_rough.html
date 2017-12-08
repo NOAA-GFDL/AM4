@@ -1,0 +1,254 @@
+<HTML>
+<TITLE>module ocean_rough</TITLE>
+<BODY BGCOLOR="#AABBCC" TEXT="#332211" >
+
+<DIV ALIGN="CENTER"> <FONT SIZE=1>
+<A HREF="#INTERFACE">PUBLIC INTERFACE</A> / 
+<A HREF="#ROUTINES">ROUTINES</A> / 
+<A HREF="#NAMELIST">NAMELIST</A> / 
+<A HREF="#CHANGES">CHANGES</A> / 
+<A HREF="#ERRORS">ERRORS</A> / 
+<A HREF="#REFERENCES">REFERENCES</A> / 
+<A HREF="#NOTES">NOTES</A> 
+</FONT>
+<BR><BR></DIV><HR>
+
+
+<H2>module ocean_rough</H2>
+<A NAME="HEADER">
+<PRE>
+     <B>Contact:</B>  
+     <B>Reviewers:</B>
+
+     <B><A HREF=".doc.log#ocean_rough.f90">Tags/Status</A></B>
+</PRE>
+</A><!-- END HEADER -->
+<!--------------------------------------------------------------------->
+<A NAME="OVERVIEW">
+<HR>
+<H4>OVERVIEW</H4>
+<!-- BEGIN OVERVIEW -->
+<PRE>
+
+     Computes or sets the ocean surface roughness.
+
+</PRE>
+</A><!-- END OVERVIEW -->
+<!--------------------------------------------------------------------->
+<A NAME="DESCRIPTION">
+<!-- BEGIN DESCRIPTION -->
+<PRE>
+     This version calculates the ocean roughness from the magnitude
+     of the wind stress components using the formulation of Beljaars (1994)
+     or the standard Charnock relation.
+     There is also an option for using a uniform roughness (the default).
+
+</PRE>
+</A><!-- END DESCRIPTION -->
+<!--------------------------------------------------------------------->
+<A NAME="MODULES_USED">
+<HR>
+<H4>OTHER MODULES USED</H4>
+<!-- BEGIN MODULES_USED -->
+<PRE>
+
+    utilities_mod
+    constants_mod
+
+</PRE>
+</A><!-- END MODULES_USED -->
+<!--------------------------------------------------------------------->
+<A NAME="INTERFACE">
+<HR>
+<H4>PUBLIC INTERFACE</H4>
+<!-- BEGIN INTERFACE -->
+<PRE>
+
+use ocean_rough_mod [, only: ocean_rough_init,
+                             compute_ocean_roughness,
+                             fixed_ocean_roughness    ]
+
+compute_ocean_roughness:  Computes ocean roughness for heat, moisture,
+                          and momentum using wind stress or assigns a
+                          uniform value depending on a flag set through
+                          the namelist. This routine calls fixed_ocean_roughness.
+
+fixed_ocean_roughness:    Sets a uniform roughnesses for heat, moisture,
+                          and momentum. The roughness values may be
+                          modified through the namelist. Users should use
+                          the routine compute_ocean_roughness if possible.
+
+</PRE>
+</A><!-- END INTERFACE -->
+<!--------------------------------------------------------------------->
+<A NAME="ROUTINES">
+<HR>
+<H4>PUBLIC ROUTINES</H4>
+<!-- BEGIN ROUTINES -->
+<PRE>
+
+<b>call compute_ocean_roughness</b> ( ocean, tau_x, tau_y, 
+                               rough_mom, rough_heat, rough_moist )
+
+INPUT
+
+  ocean    Sea/Land mask, ocean=.true. for ocean points.
+             [logical, dimension(:,:)]
+
+  tau_x    Zonal wind stress (Pascals)
+             [real dimension(:,:)]
+
+  tau_y    Meridional wind stress (Pascals)
+             [real dimension(:,:)]
+
+OUTPUT
+
+  rough_mom   Surface roughness felt by momentum fields (meters)
+                [real dimension(:,:)]
+
+  rough_heat  Surface roughness felt by heat (temperature) fields (meters)
+                [real dimension(:,:)]
+
+  rough_moist Surface roughness felt by moisture (specific humidity) fields (meters)
+                [real dimension(:,:)]
+
+----------------------------------------------------------------
+
+<b>call fixed_ocean_roughness</b> ( ocean, rough_mom, rough_heat )
+
+INPUT
+
+  ocean    Sea/Land mask, ocean=.true. for ocean points.
+             [logical, dimension(:,:)]
+
+OUTPUT
+
+  rough_mom   Surface roughness felt by momentum fields (meters)
+                [real dimension(:,:)]
+
+  rough_heat  Surface roughness felt by heat (temperature) fields (meters)
+                [real dimension(:,:)]
+
+  rough_moist Surface roughness felt by moisture (specific humidity) fields (meters)
+                [real dimension(:,:)]
+
+</PRE>
+</A><!-- END ROUTINES -->
+<!--------------------------------------------------------------------->
+<A NAME="NAMELIST">
+<HR>
+<H4>NAMELIST</H4>
+<!-- BEGIN NAMELIST -->
+<PRE>
+
+<b>&ocean_rough_nml</b>
+
+  real    :: charnock       = 0.032     ! constant for the Charnock relation (see notes)
+  real    :: roughness_init = 0.00044   ! not used in this version
+  real    :: roughness_min  = 1.e-6     ! smallest allowable roughness
+  real    :: rho_atm        = 1.13      ! reference density
+
+  character :: rough_scheme = 'fixed'   ! possible values include:
+                                        !    = 'fixed'    --> use fixed roughness values
+                                        !    = 'beljaars' --> use Beljaars (1994) scheme
+                                        !    = 'charnock' --> use simple Charnock relation
+
+  logical :: use_fixed_rough = .true.   ! OBSOLETE: use rough_scheme
+  real    :: roughness_mom   = 5.8e-5   ! momentum roughness when use_fixed_rough = .true.
+  real    :: roughness_heat  = 5.8e-5   ! heat/moisture roughness when use_fixed_rough = .true.
+  real    :: roughness_moist = 5.8e-5   ! heat/moisture roughness when use_fixed_rough = .true.
+
+</PRE>
+</A><!-- END NAMELIST -->
+<!--------------------------------------------------------------------->
+<A NAME="CHANGES">
+<HR>
+<H4>CHANGE HISTORY</H4>
+<!-- BEGIN CHANGES -->
+<PRE>
+<B><A HREF=".doc.log#ocean_rough.f90">Revision history</A></B>
+
+<b>changes prior to 10/6/1999</b>
+
+     MPP version created. Minor changes for open_file, error_mesg,
+     and Fortran write statements. Answers should reproduce the
+     previous version.
+
+</PRE>
+</A><!-- END CHANGES -->
+<!--------------------------------------------------------------------->
+<A NAME="ERRORS">
+<HR>
+<H4>ERROR MESSAGES</H4>
+<!-- BEGIN ERRORS -->
+<PRE>
+
+<b>FATAL error in ocean_rough_mod</b>
+
+    <b>namelist option USE_FIXED_ROUGH should be replaced with variable ROUGH_SCHEME</b>
+        Do not use namelist variable USE_FIXED_ROUGH.
+        This variable will be phased out in future revisions.
+        The variable ROUGH_SCHEME (a character string) should be use instead.
+        See the <a href="ocean_rough.doc.html#NAMELIST">namelist documentation</a> for details.
+
+</PRE>
+</A><!-- END ERRORS -->
+<!--------------------------------------------------------------------->
+<A NAME="REFERENCES">
+<HR>
+<H4>REFERENCES</H4>
+<!-- BEGIN REFERENCES -->
+<PRE>
+
+     Miller, M.J., et. al., 1992. J. of Climate, 418-434.
+
+     Beljaars, A. C. M., 1994. QJRMS, 255-270.
+
+</PRE>
+</A><!-- END REFERENCES -->
+<!--------------------------------------------------------------------->
+<A NAME="BUGS">
+<HR>
+<H4>KNOWN BUGS</H4>
+<!-- BEGIN BUGS -->
+<PRE>
+
+     There are no known bugs.
+
+</PRE>
+</A><!-- END BUGS -->
+<!--------------------------------------------------------------------->
+<A NAME="NOTES">
+<HR>
+<H4>NOTES</H4>
+<!-- BEGIN NOTES -->
+<PRE>
+
+  u_star**2 is computed from wind stress components (Tx,Ty) as
+
+  u_star**2 = SQRT ( Tx**2 + Ty**2 ) / rho_atm
+
+  u_star**2 = MAX ( gnu**2 , u_star**2 )
+
+  where: rho_atm is a constant reference density (see namelist)
+         gnu is the kinematic viscosity for air in m/s2 (1.5e-5)
+
+
+</PRE>
+</A><!-- END NOTES -->
+<!--------------------------------------------------------------------->
+<A NAME="PLANS">
+<HR>
+<H4>FUTURE PLANS</H4>
+<!-- BEGIN PLANS -->
+<PRE>
+
+     None.
+
+</PRE>
+</A><!-- END PLANS -->
+<!--------------------------------------------------------------------->
+
+<HR>
+</BODY>
+</HTML>

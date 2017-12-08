@@ -1,0 +1,368 @@
+<html>
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=EUC-JP">
+<title>Module tropchem_driver_mod</title>
+<link type="text/css" href="http://www.gfdl.noaa.gov/~fms/style/doc.css" rel="stylesheet">
+<STYLE TYPE="text/css">
+          .fixed {
+            font-size:medium;
+            font-family:monospace;
+            border-style:none;
+            border-width:0.1em;
+            padding:0.1em;
+            color:#663366;
+          }
+        </STYLE>
+</head>
+<body>
+<a name="TOP"></a><font class="header" size="1"><a href="#PUBLIC INTERFACE">PUBLIC INTERFACE </a>~
+          <a href="#PUBLIC DATA">PUBLIC DATA </a>~
+          <a href="#PUBLIC ROUTINES">PUBLIC ROUTINES </a>~
+          <a href="#NAMELIST">NAMELIST </a>~
+          <a href="#DIAGNOSTIC FIELDS">DIAGNOSTIC FIELDS </a>~
+          <a href="#ERROR MESSAGES">ERROR MESSAGES </a>~
+          <a href="#REFERENCES">REFERENCES </a>~ 
+          <a href="#NOTES">NOTES</a></font>
+<hr>
+<h2>Module tropchem_driver_mod</h2>
+<a name="HEADER"></a>
+<!-- BEGIN HEADER -->
+<div>
+<b>Contact:&nbsp;</b><a href="mailto:Larry.Horowitz@noaa.gov">   Larry W. Horowitz </a>
+<br>
+<b>Reviewers:&nbsp;</b>
+<br>
+<b>Change History:&nbsp;</b><a href="http://www.gfdl.noaa.gov/fms-cgi-bin/cvsweb.cgi/FMS/atmos/shared/tracer_driver/tropchem">WebCVS Log</a>
+<br>
+<br>
+</div>
+<!-- END HEADER -->
+<a name="OVERVIEW"></a>
+<hr>
+<h4>OVERVIEW</h4>
+<!-- BEGIN OVERVIEW -->
+<p class="text">   This code calculates tracer tendencies due to tropospheric chemistry </p>
+<!-- END OVERVIEW -->
+<a name="DESCRIPTION"></a>
+<!-- BEGIN DESCRIPTION -->
+<div>   This code calculates chemical production and loss of tracers due
+   to tropospheric chemistry. It also includes dry deposition, upper
+   boundary conditions, emissions. Off-line sulfate concentrations are
+   read in for use in calculating heterogeneous reaction rates (if SO4
+   is not included as a tracer).
+   <br>
+<br>
+   This module is only activated is do_tropchem=T in tropchem_driver_nml
+   <br>
+<br> 
+</div>
+<br>
+<!-- END DESCRIPTION -->
+<a name="OTHER MODULES USED"></a>
+<hr>
+<h4>OTHER MODULES USED</h4>
+<!-- BEGIN OTHER MODULES USED -->
+<div>
+<pre>                   fms_mod<br>          time_manager_mod<br>          diag_manager_mod<br>        tracer_manager_mod<br>         field_manager_mod<br>atmos_tracer_utilities_mod<br>             constants_mod<br>                   mpp_mod<br>          interpolator_mod<br>             mo_chemdr_mod<br>            mo_chemini_mod<br>            M_TRACNAME_MOD<br>               MO_GRID_MOD<br>              MOZ_HOOK_MOD</pre>
+</div>
+<!-- END OTHER MODULES USED -->
+<!-- BEGIN PUBLIC INTERFACE -->
+<a name="PUBLIC INTERFACE"></a>
+<hr>
+<h4>PUBLIC INTERFACE</h4>
+<div>
+<dl>
+<dt>
+<a href="#tropchem_driver">tropchem_driver</a>:</dt>
+<dd>   Tropospheric chemistry driver. </dd>
+<dt>
+<a href="#tropchem_driver_init">tropchem_driver_init</a>:</dt>
+<dd>   Initializes the tropospheric chemistry driver. </dd>
+<dt>
+<a href="#read_2D_emis_data">read_2D_emis_data</a>:</dt>
+<dd>   Read emissions file </dd>
+<dt>
+<a href="#init_2D_emis_data">init_2D_emis_data</a>:</dt>
+<dd>   Open emissions file </dd>
+<dt>
+<a href="#tropchem_drydep_init">tropchem_drydep_init</a>:</dt>
+<dd>   Open dry deposition file </dd>
+</dl>
+</div>
+<br>
+<!-- END PUBLIC INTERFACE -->
+<a name="PUBLIC DATA"></a>
+<hr>
+<h4>PUBLIC DATA</h4>
+<!-- BEGIN PUBLIC DATA -->
+<div>None.<br>
+<br>
+</div>
+<!-- END PUBLIC DATA -->
+<a name="PUBLIC ROUTINES"></a>
+<hr>
+<h4>PUBLIC ROUTINES</h4>
+<!-- BEGIN PUBLIC ROUTINES -->
+<ol type="a">
+<li>
+<a name="tropchem_driver"></a>
+<h4>tropchem_driver</h4>
+<pre>
+<b>call tropchem_driver </b>(lon, lat, land, pwt, r, chem_dt, &amp; Time, phalf, pfull, t, is, js, dt, &amp; z_half, z_full, q, tsurf, albedo, coszen, &amp; Time_next, rdiag, kbot)</pre>
+<dl>
+<dt>
+<b>DESCRIPTION</b>
+</dt>
+<dd>   This subroutine calculates the sources and sinks of tracers
+   due to tropospheric chemistry. It is called from atmos_tracer_driver. </dd>
+<br>
+<br>
+<dt>
+<b>INPUT</b>
+</dt>
+<dd>
+<table border="0">
+<tr>
+<td valign="top" align="left"><tt>lon&nbsp;&nbsp;&nbsp;</tt></td><td>   The longitudes for the local domain. <br>&nbsp;&nbsp;&nbsp;<span class="type">[real, dimension(:,:)]</span></td>
+</tr>
+<tr>
+<td valign="top" align="left"><tt>lat&nbsp;&nbsp;&nbsp;</tt></td><td>   The latitudes for the local domain. <br>&nbsp;&nbsp;&nbsp;<span class="type">[real, dimension(:,:)]</span></td>
+</tr>
+<tr>
+<td valign="top" align="left"><tt>land&nbsp;&nbsp;&nbsp;</tt></td><td>   The latitudes for the local domain. <br>&nbsp;&nbsp;&nbsp;<span class="type">[real, dimension(:,:)]</span></td>
+</tr>
+<tr>
+<td valign="top" align="left"><tt>pwt&nbsp;&nbsp;&nbsp;</tt></td><td>   Pressure weighting (air mass) for each layer (kg/m2) <br>&nbsp;&nbsp;&nbsp;<span class="type">[real, dimension(:,:,:)]</span></td>
+</tr>
+<tr>
+<td valign="top" align="left"><tt>r&nbsp;&nbsp;&nbsp;</tt></td><td>   Tracer mixing ratios (tropchem tracers in VMR) <br>&nbsp;&nbsp;&nbsp;<span class="type">[real, dimension(:,:,:,:)]</span></td>
+</tr>
+<tr>
+<td valign="top" align="left"><tt>Time, Time_next&nbsp;&nbsp;&nbsp;</tt></td><td>   Model time <br>&nbsp;&nbsp;&nbsp;<span class="type">[time_type]</span></td>
+</tr>
+<tr>
+<td valign="top" align="left"><tt>phalf&nbsp;&nbsp;&nbsp;</tt></td><td>   Pressure on the model half levels (Pa) <br>&nbsp;&nbsp;&nbsp;<span class="type">[real, dimension(:,:,:)]</span></td>
+</tr>
+<tr>
+<td valign="top" align="left"><tt>pfull&nbsp;&nbsp;&nbsp;</tt></td><td>   Pressure on the model full levels (Pa) <br>&nbsp;&nbsp;&nbsp;<span class="type">[real, dimension(:,:,:)]</span></td>
+</tr>
+<tr>
+<td valign="top" align="left"><tt>t&nbsp;&nbsp;&nbsp;</tt></td><td>   Temperature. <br>&nbsp;&nbsp;&nbsp;<span class="type">[real, dimension(:,:,:)]</span></td>
+</tr>
+<tr>
+<td valign="top" align="left"><tt>is, js&nbsp;&nbsp;&nbsp;</tt></td><td>   Local domain start indices <br>&nbsp;&nbsp;&nbsp;<span class="type">[integer]</span></td>
+</tr>
+<tr>
+<td valign="top" align="left"><tt>dt&nbsp;&nbsp;&nbsp;</tt></td><td>   Model physics timestep (s) <br>&nbsp;&nbsp;&nbsp;<span class="type">[real]</span></td>
+</tr>
+<tr>
+<td valign="top" align="left"><tt>z_half&nbsp;&nbsp;&nbsp;</tt></td><td>   Height at model half levels (m) <br>&nbsp;&nbsp;&nbsp;<span class="type">[real, dimension(:,:,:)]</span></td>
+</tr>
+<tr>
+<td valign="top" align="left"><tt>z_full&nbsp;&nbsp;&nbsp;</tt></td><td>   Height at model full levels (m) <br>&nbsp;&nbsp;&nbsp;<span class="type">[real, dimension(:,:,:)]</span></td>
+</tr>
+<tr>
+<td valign="top" align="left"><tt>q&nbsp;&nbsp;&nbsp;</tt></td><td>   Specific humidity (kg/kg) <br>&nbsp;&nbsp;&nbsp;<span class="type">[real, dimension(:,:,:)]</span></td>
+</tr>
+<tr>
+<td valign="top" align="left"><tt>tsurf&nbsp;&nbsp;&nbsp;</tt></td><td>   Surface temperature (K) <br>&nbsp;&nbsp;&nbsp;<span class="type">[real, dimension(:,:)]</span></td>
+</tr>
+<tr>
+<td valign="top" align="left"><tt>albedo&nbsp;&nbsp;&nbsp;</tt></td><td>   Surface albedo <br>&nbsp;&nbsp;&nbsp;<span class="type">[real, dimension(:,:)]</span></td>
+</tr>
+<tr>
+<td valign="top" align="left"><tt>coszen&nbsp;&nbsp;&nbsp;</tt></td><td>   Cosine of the solar zenith angle <br>&nbsp;&nbsp;&nbsp;<span class="type">[real, dimension(:,:)]</span></td>
+</tr>
+<tr>
+<td valign="top" align="left"><tt>kbot&nbsp;&nbsp;&nbsp;</tt></td><td>   Integer array describing which model layer intercepts the surface. <br>&nbsp;&nbsp;&nbsp;<span class="type">[integer, optional, dimension(:,:)]</span></td>
+</tr>
+</table>
+</dd>
+<br>
+<dt>
+<b>INPUT/OUTPUT</b>
+</dt>
+<dd>
+<table border="0">
+<tr>
+<td valign="top" align="left"><tt>rdiag&nbsp;&nbsp;&nbsp;</tt></td><td>   Diagnostic tracer mixing ratios (tropchem tracers in VMR),
+   updated on output <br>&nbsp;&nbsp;&nbsp;<span class="type">[real, dimension(:,:,:,:)]</span></td>
+</tr>
+</table>
+</dd>
+<br>
+<dt>
+<b>OUTPUT</b>
+</dt>
+<dd>
+<table border="0">
+<tr>
+<td valign="top" align="left"><tt>chem_dt&nbsp;&nbsp;&nbsp;</tt></td><td>   Tracer tendencies from tropospheric chemistry (VMR/s) <br>&nbsp;&nbsp;&nbsp;<span class="type">[real, dimension(:,:,:,:)]</span></td>
+</tr>
+</table>
+</dd>
+<br>
+</dl>
+</li>
+<li>
+<a name="tropchem_driver_init"></a>
+<h4>tropchem_driver_init</h4>
+<pre>Ltropchem = <b>tropchem_driver_init</b> ( r, mask, axes, Time, &amp; lonb_mod, latb_mod, phalf, &amp; drydep_data )</pre>
+<dl>
+<dt>
+<b>DESCRIPTION</b>
+</dt>
+<dd>   This subroutine initializes the tropospheric chemistry module.
+   It is called from atmos_tracer_driver_init.
+   Data sets are read in for dry deposition, upper boundary conditions,
+   and emissions. Off-line sulfate concentrations are also read in for
+   use in calculating heterogeneous reaction rates (if SO4 is not
+   included as a tracer). </dd>
+<br>
+<br>
+<dt>
+<b>INPUT</b>
+</dt>
+<dd>
+<table border="0">
+<tr>
+<td valign="top" align="left"><tt>mask&nbsp;&nbsp;&nbsp;</tt></td><td>   optional mask that designates which grid points
+   are above (1) or below (0) the ground <br>&nbsp;&nbsp;&nbsp;<span class="type">[real, optional, dimension(:,:,:)]</span></td>
+</tr>
+<tr>
+<td valign="top" align="left"><tt>axes&nbsp;&nbsp;&nbsp;</tt></td><td>   The axes relating to the tracer array <br>&nbsp;&nbsp;&nbsp;<span class="type">[integer, dimension(4)]</span></td>
+</tr>
+<tr>
+<td valign="top" align="left"><tt>Time&nbsp;&nbsp;&nbsp;</tt></td><td>   Model time. <br>&nbsp;&nbsp;&nbsp;<span class="type">[type(time_type)]</span></td>
+</tr>
+<tr>
+<td valign="top" align="left"><tt>lonb_mod&nbsp;&nbsp;&nbsp;</tt></td><td>   The longitudes for the local domain. <br>&nbsp;&nbsp;&nbsp;<span class="type">[real, dimension(:)]</span></td>
+</tr>
+<tr>
+<td valign="top" align="left"><tt>latb_mod&nbsp;&nbsp;&nbsp;</tt></td><td>   The latitudes for the local domain. <br>&nbsp;&nbsp;&nbsp;<span class="type">[real, dimension(:)]</span></td>
+</tr>
+<tr>
+<td valign="top" align="left"><tt>phalf&nbsp;&nbsp;&nbsp;</tt></td><td>   Pressure on the model half levels (Pa) <br>&nbsp;&nbsp;&nbsp;<span class="type">[real, dimension(:,:,:)]</span></td>
+</tr>
+</table>
+</dd>
+<br>
+<dt>
+<b>INPUT/OUTPUT</b>
+</dt>
+<dd>
+<table border="0">
+<tr>
+<td valign="top" align="left"><tt>r&nbsp;&nbsp;&nbsp;</tt></td><td>   Tracer mixing ratios (tropchem tracers in VMR) <br>&nbsp;&nbsp;&nbsp;<span class="type">[real, dimension(:,:,:,:)]</span></td>
+</tr>
+</table>
+</dd>
+<br>
+<dt>
+<b>OUTPUT</b>
+</dt>
+<dd>
+<table border="0">
+<tr>
+<td valign="top" align="left"><tt>drydep_data&nbsp;&nbsp;&nbsp;</tt></td><td>   Tracer dry deposition velocities <br>&nbsp;&nbsp;&nbsp;<span class="type">[interpolate_type, dimension(:)]</span></td>
+</tr>
+<tr>
+<td valign="top" align="left"><tt>Ltropchem&nbsp;&nbsp;&nbsp;</tt></td><td>   Do tropospheric chemistry? (Output as function value) <br>&nbsp;&nbsp;&nbsp;<span class="type">[logical]</span></td>
+</tr>
+</table>
+</dd>
+<br>
+</dl>
+</li>
+<li>
+<a name="read_2D_emis_data"></a>
+<h4>read_2D_emis_data</h4>
+<pre>
+<b>call read_2D_emis_data </b>( emis_type, emis, Time, field_names, is, js, id_emis )</pre>
+<dl>
+<dt>
+<b>DESCRIPTION</b>
+</dt>
+<dd>   Reads tracer surface emissions from a NetCDF file </dd>
+<br>
+<br>
+</dl>
+</li>
+<li>
+<a name="init_2D_emis_data"></a>
+<h4>init_2D_emis_data</h4>
+<pre>
+<b>call init_2D_emis_data </b>( emis_type, model, method_type, index, file_name, &amp; lonb_mod, latb_mod, field_type, flag )</pre>
+<dl>
+<dt>
+<b>DESCRIPTION</b>
+</dt>
+<dd>   Opens NetCDF file of tracer surface emissions for reading,
+   and set up interpolation to model grid/time </dd>
+<br>
+<br>
+</dl>
+</li>
+<li>
+<a name="tropchem_drydep_init"></a>
+<h4>tropchem_drydep_init</h4>
+<pre>
+<b>call tropchem_drydep_init </b>( dry_files, dry_names, &amp; lonb_mod, latb_mod, &amp; drydep_data )</pre>
+<dl>
+<dt>
+<b>DESCRIPTION</b>
+</dt>
+<dd>   Opens NetCDF file of tracer dry deposition velocities for reading,
+   and set up interpolation to model grid/time </dd>
+<br>
+<br>
+</dl>
+</li>
+</ol>
+<!-- END PUBLIC ROUTINES -->
+<a name="PUBLIC TYPES"></a>
+<!-- BEGIN PUBLIC TYPES -->
+<!-- END PUBLIC TYPES --><a name="NAMELIST"></a>
+<!-- BEGIN NAMELIST -->
+<!-- END NAMELIST --><a name="DIAGNOSTIC FIELDS"></a>
+<!-- BEGIN DIAGNOSTIC FIELDS -->
+<!-- END DIAGNOSTIC FIELDS --><a name="DATA SETS"></a>
+<!-- BEGIN DATA SETS -->
+<hr>
+<h4>DATA SETS</h4>
+<div>None.<br>
+<br>
+</div>
+<!-- END DATA SETS -->
+<a name="PUBLIC CODE"></a>
+<!-- BEGIN PUBLIC CODE -->
+<!-- END PUBLIC CODE --><a name="ERROR MESSAGES"></a>
+<!-- BEGIN ERROR MESSAGES -->
+<hr>
+<h4>ERROR MESSAGES</h4>
+<div>
+<dl>
+<dt>
+<b>FATAL in tropchem_driver</b>
+</dt>
+<dd>
+<span class="errmsg">tropchem_driver_init must be called first.</span>
+</dd>
+<dd>   Tropchem_driver_init needs to be called before tracer_driver. </dd>
+<dt>
+<b>WARNING in tropchem_driver_init</b>
+</dt>
+<dd>
+<span class="errmsg">Tropospheric chemistry tracer not found in field table</span>
+</dd>
+<dd>   A tropospheric chemistry tracer was not included in the field table </dd>
+</dl>
+<br>
+</div>
+<!-- END ERROR MESSAGES -->
+<hr>
+<div align="right">
+<font size="-1"><a href="#TOP">top</a></font>
+</div>
+</body>
+</html>

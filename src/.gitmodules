@@ -1,0 +1,9 @@
+[submodule "shared"]
+	path = shared
+	url = https://github.com/NOAA-GFDL/FMS.git
+[submodule "coupler"]
+	path = coupler
+	url = https://github.com/NOAA-GFDL/coupler.git
+[submodule "MOM6"]
+	path = MOM6
+	url = https://github.com/NOAA-GFDL/MOM6.git

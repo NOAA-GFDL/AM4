@@ -1,0 +1,389 @@
+<HTML>
+<TITLE>module cloud_rad</TITLE>
+<BODY BGCOLOR="#AABBCC" TEXT="#332211" >
+
+<DIV ALIGN="CENTER"> <FONT SIZE=1>
+<A HREF="#INTERFACE">PUBLIC INTERFACE</A> / 
+<A HREF="#DATA_TYPES">DATA</A> / 
+<A HREF="#ROUTINES">ROUTINES</A> / 
+<A HREF="#NAMELIST">NAMELIST</A> / 
+<A HREF="#DIAGNOSTICS">DIAGNOSTICS</A> / 
+<A HREF="#CHANGES">CHANGES</A> / 
+<A HREF="#ERRORS">ERRORS</A> / 
+<A HREF="#REFERENCES">REFERENCES</A> / 
+<A HREF="#NOTES">NOTES</A> 
+</FONT>
+<BR><BR></DIV><HR>
+
+
+<H2>Module Rh_Clouds_Mod</H2>
+<A NAME="HEADER">
+<PRE>
+     <B>Contact:</B>   Isaac Held and Steve Klein
+     <B>Reviewers:</B>
+
+</PRE>
+</A><!-- END HEADER -->
+<!--------------------------------------------------------------------->
+<A NAME="OVERVIEW">
+<HR>
+<H4>OVERVIEW</H4>
+<!-- BEGIN OVERVIEW -->
+<PRE>
+
+     The rh_clouds module computes the relative humidity based clouds 
+     of Manabe and Wetherald.
+     
+</PRE>
+</A><!-- END OVERVIEW -->
+<!--------------------------------------------------------------------->
+<A NAME="DESCRIPTION">
+<!-- BEGIN DESCRIPTION -->
+<PRE>
+
+     Given the model's instantaneous or time-averaged relative humidity
+     the scheme calculates the levels that have clouds, and specifies
+     the albedo and absorption for the two shortwave bands, and the 
+     lognwave emissivity of the clouds.
+
+      The algorithm for the RH_CLOUDS Module is as detailed below.
+
+A "cloud" is defined to be present whenever the relative humidity is greater
+or equal to r_crit, where r_crit varies linearly in 
+sigma = pressure/surface_pressure:
+
+   r_crit = rh_crit_top + sigma*(rh_crit_bot - rh_crit_top)
+
+If clouds are present in adjacent levels, they constitute a single cloud
+
+i.e., for a 10 level model (0,1,1,1,0,0,1,1,0,1,0) 
+             ( 0 = no-cloud  1 = cloud)
+             there are three clouds
+
+Clouds are defined as "high"   if sigma <= high_middle
+Clouds are defined as "middle" if high_middle < sigma <= middle_low
+Clouds are defined as "low"    if middle_low < sigma 
+
+The values of high_middle and middle_low are latitude-dependent, 
+
+   x = (90.0 - abs(deg_lat))/90.
+   high_middle = high_middle_pole + x*(high_middle_eq - high_middle_pole)
+   middle_low  = middle_low_pole  + x*(middle_low_eq  - middle_low_pole )
+
+where high_middle_pole etc are namelist parameters.
+
+
+The short wave and near infrared albedos of each cloud type (high, middle low)
+are  determined by a table look-up that depends on zenith angle 
+-- ( so six functions of zenith angle are tabulated in all)
+-- sigma at cloud base determines whether it is high, medium or low 
+-- optical parameters do NOT depend on thickness of cloud
+
+The short wave absorption coefficient of all clouds is set to 0.0
+The near-infrared absorption coefficients for high, middle, and low clouds
+  are set in the namelist
+The infrared emissivity of each cloud type is also set in the namelist
+
+</PRE>
+</A><!-- END DESCRIPTION -->
+<!--------------------------------------------------------------------->
+<A NAME="MODULES_USED">
+<HR>
+<H4>OTHER MODULES USED</H4>
+<!-- BEGIN MODULES_USED -->
+<PRE>
+
+utilities_mod
+
+</PRE>
+</A><!-- END MODULES_USED -->
+<!--------------------------------------------------------------------->
+<A NAME="INTERFACE">
+<HR>
+<H4>PUBLIC INTERFACE</H4>
+<!-- BEGIN INTERFACE -->
+<PRE>
+
+use rh_clouds_mod [,only: rh_clouds, rh_clouds_init, rh_clouds_end,
+                          rh_clouds_sum, rh_clouds_avg]
+
+rh_clouds      -      given the relative humidity (rh) field, zenith
+                      angle and latitude, rh_clouds returns the cloud 
+                      locations and their radiative properties 
+
+rh_clouds_init -       called once to initialize rh_clouds module.  
+                      This routine reads and initializes the namelist 
+                      input. 
+
+rh_clouds_end -       this ending routine writes to a restart file
+                      'rh_clouds.res', rh field data so that the rh
+                      clouds can smoothly be started in the next 
+                      integration.
+
+rh_clouds_sum -        called when to replace or increment the storage
+                      value of the relative humidity.
+
+rh_clouds_avg -        called when rh is retrieved from storage for a
+                      radiation calculation.
+
+</PRE>
+</A><!-- END INTERFACE -->
+<!--------------------------------------------------------------------->
+<A NAME="ROUTINES">
+<HR>
+<H4>PUBLIC ROUTINES</H4>
+<!-- BEGIN ROUTINES -->
+<PRE>
+
+-----------------------------------------------------------------------
+
+call rh_clouds(rh, p_full, p_surf, zenith, deg_lat,&
+            n_cloud,top,bot,cldamt,alb_uv,alb_nir,abs_uv,abs_nir,emiss)
+
+     (In the following the phrase "dimension(:) or (:,:)" means
+      that this routine can be called either with all of the 
+      variables so designated being either 1d or 2d arrays.
+      All of these arrays should conform exactly.)
+
+     (That is rh_clouds is a module procedure which can be called
+      with full 3-dimensional arguments or a single point)
+
+input
+
+     rh         relative humidity on model levels (fraction)
+                [real, dimension(:,:,:)]
+
+     pfull      pressure at full model levels {Pascals}. 
+                [real,dimension(:,:,nlev)] 
+                IMPORTANT NOTE: p(j) < p(j+1)
+
+     p_surf     surface pressure surface{Pascals} [real,dimension(:,:)]
+
+     zenith     cosine of the solar zenith angle [real,dimension(:,:)]
+
+     deg_lat    latitude in degrees [real,dimension(:,:)] 
+
+
+
+output
+
+     n_cloud    number of (random overlapping) clouds in column 
+                [integer,dimension(:,:)]
+
+     top        index of vertical level which contains the top of
+                the i'th cloud in the column. [integer,dimension(:,:,i),
+                where i = 1, n_cloud(:,:)]
+    
+     bot        index of vertical level which contains the bottom of
+                the i'th cloud in the column. [integer,dimension(:,:,i)]
+    
+     cldamt     horiztonal area amount of i'th cloud (fraction)
+                [real,dimension(:,:,i)]
+
+     alb_uv       cloud reflectance in ultra-violet (uv) band of i'th cloud 
+                (fraction) [real,dimension(:,:,i)]
+     
+     alb_nir      cloud reflectance in the near-infrared (nir) band of i'th 
+                cloud (fraction) [real,dimension(:,:,i)] 
+
+     abs_uv      cloud absorptance in the uv band of i'th cloud 
+                (fraction) [real,dimension(:,:,i)]
+
+     abs_nir     cloud absorptance in the nir band of i'th cloud 
+                (fraction) [real,dimension(:,:,i)]
+
+     emiss      longwave emissivity of the i'th cloud (fraction)
+                [real,dimension(:,:,i)]
+
+-----------------------------------------------------------------------
+
+
+call rh_clouds_init (nlon,nlat,nlev)
+
+input
+    
+     nlon       number of x dimension points [integer]
+
+     nlat       number of y dimension points [integer]
+
+     nlev       number of z dimension points [integer]
+  
+
+-----------------------------------------------------------------------
+
+call rh_clouds_end (nlon,nlat,nlev)
+
+[No interface for rh_clouds_end]
+
+-----------------------------------------------------------------------
+
+call subroutine rh_clouds_sum (is, js, rh)
+
+input 
+
+     is         integer of starting x position of data window [integer]
+       
+     js         integer of starting y position of data window [integer]
+   
+     rh         relative humidity (fraction)  [real, dimension(:,:,:)]
+
+-----------------------------------------------------------------------
+
+call subroutine rh_clouds_avg (is, js, rh)
+
+input 
+
+     is         integer of starting x position of data window [integer]
+       
+     js         integer of starting y position of data window [integer]
+
+ output
+ 
+     rh         relative humidity (fraction)  [real, dimension(:,:,:)]
+
+     ierr       integer error variable
+
+
+</PRE>
+</A><!-- END ROUTINES -->
+<!--------------------------------------------------------------------->
+<A NAME="NAMELIST">
+<HR>
+<H4>NAMELIST</H4>
+<!-- BEGIN NAMELIST -->
+<PRE>
+
+&rh_clouds_nml
+
+       
+    high_middle_pole  sigma coordinate boundary between high and
+                          middle clouds at the pole 
+                      [real, default: high_middle_pole=0.7]
+
+    high_middle_eq    sigma coordinate boundary between high and
+                          middle clouds at the equator
+                      [real, default: high_middle_eq=0.4]
+
+    middle_low_pole   sigma coordinate boundary between low and
+                          middle clouds at the pole 
+                      [real, default: middle_low_pole=0.85]
+
+    middle_low_eq     sigma coordinate boundary between low and
+                          middle clouds at the equator
+                      [real, default: middle_low_eq=0.7]
+
+    rh_crit_bot       critical relative humidity to define occur of cloud
+                        at sigma = 1         when do_mcm_crit_rh=.false.
+                            or
+                        at lowest full level when do_mcm_crit_rh=.true.
+                      [real, default: rh_crit_bot=1.0]
+
+    rh_crit_top       critical relative humidity to define occur of cloud
+                          at sigma = 0
+                      [real, default: rh_crit_top=0.9]
+
+    do_mcm_crit_rh    See rh_crit_bot
+                      [logical, default: do_mcm_crit_rh=.false.]
+
+    do_mcm_no_clouds_top: Prevents clouds at top model level. 
+                      [logical, default: do_mcm_no_clouds_top=.false.]
+
+    tuning_coeff_low_cld: Multiplies low cloud albedos to change default values.
+                       Intended for use with Manabe Climate Model.
+		       [real, default: tuning_coeff_low_cld = 1.0]
+
+    high_abs          Near-infrared absorptivities of high clouds
+                      [real, default: high_abs = 0.04]
+
+    middle_abs        Near-infrared absorptivities of middle level clouds
+                      [real, default: middle_abs = 0.30]
+
+    low_abs           Near-infrared absorptivities of low clouds
+                      [real, default: low_abs = 0.40]
+
+    high_emiss        Infrared emissivities of high clouds
+                      [real, default: high_emiss = 0.6]
+
+    middle_emiss      Infrared emissivities of middle level clouds
+                      [real, default: middle_emiss = 1.0]
+
+    low_emiss         Infrared emissivities of low clouds
+                      [real, default: low_emiss = 1.0]
+
+    do_average        Use time-averaged rh values when computing
+                          clouds
+                      [logical, default: do_average = .true.]
+
+</PRE>
+</A><!-- END NAMELIST -->
+<!--------------------------------------------------------------------->
+<A NAME="CHANGES">
+<HR>
+<H4>CHANGE HISTORY</H4>
+<!-- BEGIN CHANGES -->
+<PRE>
+
+<b>Prior Changes</b> (1/24/2009)
+
+    Fixed a bug with the reading and writing of restart data (nsum).
+
+<b>Prior Changes</b> (10/4/1999)
+
+    MPP version created. Changes to open_file and error_mesg arguments, 
+    Fortran write statements to standard output only on PE 0, Fortran close
+    statement changed to call close_file, and Fortran read/write statements
+    for restart files changed to call read_data/write_data.
+
+</PRE>
+</A><!-- END CHANGES -->
+<!--------------------------------------------------------------------->
+<A NAME="ERRORS">
+<HR>
+<H4>ERROR MESSAGES</H4>
+<!-- BEGIN ERRORS -->
+<PRE>
+
+'input argument has the wrong size' is returned from rh_clouds_avg when
+ dimensions of rh output array does not match the stored rh field.
+
+'dimensions of zenith and top do not match' is returned when the input
+arguments to rh_clouds do not match the shapes of the arrays.
+
+'dimension of deg_lat and top do not match' is returned when the input
+arguments to rh_clouds do not match the shapes of the arrays.
+
+'third dimension of top not large enough' is an internal error message
+of rh_clouds subroutine which arises is dimensions of top do not have enough
+entries to fulfill the need. 
+
+</PRE>
+</A><!-- END ERRORS -->
+<!--------------------------------------------------------------------->
+<A NAME="REFERENCES">
+<HR>
+<H4>REFERENCES</H4>
+<!-- BEGIN REFERENCES -->
+<PRE>
+
+     Wetherald, R. T. and S. Manabe, 1988, J. Atmos. Sci., vol. 45,
+     pp. 1397-1415.
+
+</PRE>
+</A><!-- END REFERENCES -->
+<!--------------------------------------------------------------------->
+<A NAME="PLANS">
+<HR>
+<H4>FUTURE PLANS</H4>
+<!-- BEGIN PLANS -->
+<PRE>
+
+     No Plans at present.
+
+</PRE>
+</A><!-- END PLANS -->
+<!--------------------------------------------------------------------->
+
+<HR>
+</BODY>
+</HTML>
+

@@ -1,0 +1,431 @@
+<HTML>
+<TITLE>module sample</TITLE>
+<BODY BGCOLOR="#AABBCC" TEXT="#332211" >
+
+<DIV ALIGN="CENTER"> <FONT SIZE=1>
+<A HREF="#INTERFACE">PUBLIC INTERFACE</A> / 
+<A HREF="#DATA_TYPES">DATA</A> / 
+<A HREF="#ROUTINES">ROUTINES</A> / 
+<A HREF="#NAMELIST">NAMELIST</A> / 
+<A HREF="#DIAGNOSTICS">DIAGNOSTICS</A> / 
+<A HREF="#CHANGES">CHANGES</A> / 
+<A HREF="#ERRORS">ERRORS</A> / 
+<A HREF="#REFERENCES">REFERENCES</A> / 
+<A HREF="#NOTES">NOTES</A> 
+</FONT>
+<BR><BR></DIV><HR>
+
+
+<H2>Sea Ice Simulator</H2>
+<A NAME="HEADER">
+<!-- BEGIN HEADER -->
+<PRE>
+     <B>Contact:</B>   Michael Winton (mw)
+     <B>Reviewers:</B>
+
+     <B><A HREF=".doc.log#sample.f90">Tags/Status</A></B>
+</PRE>
+<!-- END HEADER --></A>
+<!--------------------------------------------------------------------->
+<A NAME="OVERVIEW">
+<HR>
+<H4>OVERVIEW</H4>
+<!-- BEGIN OVERVIEW -->
+<PRE>
+
+     Sea Ice Simulator (SIS) is a dynamics/thermodynamic sea ice model for use in coupled models
+     under FMS.  SIS calculates the concentration, thickness, temperature, brine content, and snow
+     cover of an arbitrary number of ice thickness categories (including open water) as well as
+     the motion of the complete pack.
+
+</PRE>
+<!-- END OVERVIEW --></A>
+<!--------------------------------------------------------------------->
+<HR>
+<H4>DESCRIPTION</H4>
+<A NAME="DESCRIPTION">
+<!-- BEGIN DESCRIPTION -->
+<PRE>
+
+     SIS employs a three layer scheme similar to Semtner's for the vertical thermodynamics.
+     Multiple ice thickness categories are maintained.  A simple scheme moves ice between
+     categories when category thickness bounds are transgressed due to thermodynamic or dynamic
+     changes.  The model contains full dynamics with internal ice forces calculated using an
+     elastic-viscous-plastic rheology.  For more details see the technical document.  Within FMS
+     coupled models, the ocean and atmosphere models never interact directly with each other.
+     The sea ice model plays the role of a general interface between the two.  The ocean surface
+     albedo and roughnesses are provided by the sea ice model.
+
+</PRE>
+<!-- END DESCRIPTION --></A>
+<!--------------------------------------------------------------------->
+<A NAME="MODULES_USED">
+<HR>
+<H4>OTHER MODULES USED</H4>
+<!-- BEGIN MODULES_USED -->
+<PRE>
+<PRE>Modules external to SIS:</PRE>
+
+<LI><B><I>mpp_mod</I></B> (v?)</LI>
+<LI><B><I>mpp_domains_mod</I></B> (v?)</LI>
+<LI><B><I>time_manager_mod</I></B> (v?)</LI>
+<LI><B><I>utilities_mod</I></B> (v?)</LI>
+<LI><B><I>constants_mod</I></B> (v?)</LI>
+<LI><B><I>diag_manager_mod</I></B> (v?)</LI>
+
+<P><BR>
+</PRE>
+<!-- END MODULES_USED --></A>
+<!--------------------------------------------------------------------->
+<A NAME="INTERFACE">
+<HR>
+<H4>PUBLIC INTERFACE</H4>
+<!-- BEGIN INTERFACE -->
+<PRE>
+<PRE><B>
+use ice_model_mod, only : ice_model_init, ice_bottom_to_ice_top, update_ice_model_fast,
+                          update_ice_model_slow, ice_model_end, ice_data_type
+</B></PRE>
+
+<LI><B><I>ice_model_init</I></B></LI>
+
+<BLOCKQUOTE>
+<PRE>
+Reads ice_model_nml namelist input.
+Sets up ice grid configuration.
+Initializes prognostic variables (from restart file, if available).
+Initializes diagnostics.
+</PRE>
+</BLOCKQUOTE>
+
+<LI><B><I>ice_bottom_to_ice_top</I></B></LI>
+
+<BLOCKQUOTE>
+<PRE>
+Supplies surface albedo and roughnesses.
+</PRE>
+</BLOCKQUOTE>
+
+<LI><B><I>update_ice_model_fast</I></B></LI>
+
+<BLOCKQUOTE>
+<PRE>
+Calculates ice temperature changes.
+Accumulates heat and water fluxes for use in update_ice_model_slow.
+</PRE>
+</BLOCKQUOTE>
+
+<LI><B><I>update_ice_model_slow</I></B></LI>
+
+<BLOCKQUOTE>
+<PRE>
+Calculates ice and snow mass changes.
+Calculates ice motion.
+Transports ice and snow.
+Adjusts thickness distribution.
+Prepares fluxes for ocean surface.
+</PRE>
+</BLOCKQUOTE>
+
+<LI><B><I>ice_model_end</I></B></LI>
+
+<BLOCKQUOTE>
+<PRE>Writes prognostic variables to restart file.</PRE>
+</BLOCKQUOTE>
+
+<LI><B><I>ice_data_type</I></B></LI>
+
+<BLOCKQUOTE>
+<PRE>Contains the state of the ice model including fields used for coupling.</PRE>
+</BLOCKQUOTE>
+
+</PRE>
+<!-- END INTERFACE --></A>
+<!--------------------------------------------------------------------->
+<A NAME="DATA_TYPES">
+<HR>
+<H4>PUBLIC DATA</H4>
+<!-- BEGIN DATA_TYPES -->
+<PRE>
+
+type(domain2D) Ice%Domain  The coupler uses the ice domain for mapping between grids and processors
+
+real, dimension(:,:,:)
+
+   Ice%part_size     fractional area of each partition of a temperature grid box
+
+   <I>the following fields are for communication from the ice to the atmosphere </I>
+
+   Ice%t_surf        surface temperature (deg k)
+   Ice%albedo        surface albedo (fraction)
+   Ice%rough_mom     surface roughness for momentum (m)
+   Ice%rough_heat    surface roughness for heat (m)
+   Ice%rough_moist   surface roughness for moisture (m)
+   Ice%u_surf        zonal (ocean/ice) current at the surface (m/s)
+   Ice%v_surf        meridional (ocean/ice) current at the surface (m/s)
+
+   <I>the following fields are for communication from the ice to the ocean</I>
+
+   Ice%flux_u        zonal wind stress (Pa)
+   Ice%flux_v        meridional wind stress (Pa)
+   Ice%p_surf        pressure of overlying ice and atmosphere on ocean surface (Pa)
+   Ice%flux_t        sensible heat flux (w/m2)
+   Ice%flux_q        specific humidity flux (kg/m2/s)
+   Ice%flux_sw       net (down-up) shortwave flux (w/m2)
+   Ice%flux_lw       net (down-up) longwave flux (w/m2)
+   Ice%lprec         mass flux of liquid precipitation (Kg/m2/s)
+   Ice%fprec         mass flux of frozen precipitation (Kg/m2/s)
+   Ice%runoff        mass flux of liquid runoff (Kg/m2/s)
+   Ice%calving       mass flux of frozen runoff (Kg/m2/s)
+
+</PRE>
+<!-- END DATA_TYPES --></A>
+<!--------------------------------------------------------------------->
+<A NAME="ROUTINES">
+<HR>
+<H4>PUBLIC ROUTINES</H4>
+<!-- BEGIN ROUTINES -->
+<PRE>
+
+     A detailed description of public routines (all arguments
+     must be described including their units, type, and dimensions).
+
+<LI><B><I>ice_model_init</I></B></LI>
+  Ice                    type(domain2D)
+  Time_Init              type (time_type)
+  Time                   type (time_type)
+  Time_step_fast         type (time_type)
+  Time_step_slow         type (time_type)
+  ocean_domain           type(domain2D)
+
+<LI><B><I>ice_bottom_to_ice_top</I></B></LI>
+  Ice                    type(domain2D)
+  t_surf_ice_bot         real(:,:,:)
+  u_surf_ice_bot         real(:,:,:)
+  v_surf_ice_bot         real(:,:,:)
+  frazil                 real(:,:,:)
+  s_surf_ice_bot         real(:,:,:)
+  sea_lev_ice_bot        real(:,:,:)
+
+<LI><B><I>update_ice_model_fast</I></B></LI>
+  Ice                    type(domain2D)
+  flux_u                 real(:,:,:)
+  flux_v                 real(:,:,:)
+  flux_sw                real(:,:,:)
+  flux_lw                real(:,:,:)
+  flux_t                 real(:,:,:)
+  flux_q                 real(:,:,:)
+  dhdt                   real(:,:,:)
+  dedt                   real(:,:,:)
+  drdt                   real(:,:,:)
+  lprec                  real(:,:,:)
+  fprec                  real(:,:,:)
+  coszen                 real(:,:,:)
+
+<LI><B><I>update_ice_model_slow</I></B></LI>
+  Ice                    type(domain2D)
+  runoff                 real(:,:,:)
+  calving                real(:,:,:)
+  p_surf                 real(:,:,:)
+
+<LI><B><I>ice_model_end</I></B></LI>
+  Ice                    type(domain2D)
+
+</PRE>
+<!-- END ROUTINES --></A>
+<!--------------------------------------------------------------------->
+<A NAME="NAMELIST">
+<HR>
+<H4>NAMELIST</H4>
+<!-- BEGIN NAMELIST -->
+<PRE>
+kmelt            5.8e-5*4.2e6    ocean/ice heat flux constant
+heat_rough_ice   1.0e-4          heat roughness length
+mom_rough_ice    1.0e-4          momentum same, cd10=(von_k/ln(10/z0))^2
+alb_sno          0.80            snow albedo (0.05 less if melting)
+alb_ice          0.65            ice albedo (0.05 less if melting)
+pen_ice          0.3             part unreflected solar penetrates ice
+opt_dep_ice      0.67            ice optical depth
+ice_bulk_salin   0.0             ice bulk salinity (for ocean salt flux)
+p0               2.75e4          ice strength parameter
+c0               20.0            another ice strength parameter
+cdw              3.24e-3         water/ice drag coefficient
+wd_turn          25.0            water/ice drag turning angle
+nsteps_dyn       432             dynamics steps per slow timestep
+nsteps_adv       8               advection steps per slow timestep
+atmos_winds      .true.          wind stress from atmosphere model over t points and has wrong sign
+slab_ice         .false.         do old-style GFDL slab ice?
+spec_ice         .false.         old-style GFDL slab ice with SST, ice thickness and conc. from data
+num_part         6               number of ice grid partitions (partition 1 is open water)
+</PRE>
+<!-- END NAMELIST --></A>
+<!--------------------------------------------------------------------->
+<A NAME="DIAGNOSTICS">
+<HR>
+<H4>DIAGNOSTIC FIELDS</H4>
+<!-- BEGIN DIAGNOSTICS -->
+<PRE>
+MOI          ice modeled                         0 or 1
+MI           ice mass                            Kg/m^2
+CN           ice concentration                   0-1
+HS           snow thickness                      m-snow
+HI           ice thickness                       m-ice
+T1           upper ice layer temperature         C
+T2           lower ice layer temperature         C
+TS           surface temperature                 C
+SH           sensible heat flux                  W/m^2
+LH           latent heat flux                    W/m^2
+SW           short wave heat flux                W/m^2
+LW           long wave heat flux over ice        W/m^2
+SNOWFL       rate of snow fall                   Kg/m^2/s
+RAIN         rate of rain fall                   Kg/m^2/s
+RUNOFF       liquid runoff                       Kg/m^2/s
+CALVING      frozen runoff                       Kg/m^2/s
+EVAP         evaporation                         Kg/m^2/s
+SALTF        ice to ocean salt flux              Kg/m^2/s
+SN2IC        rate of snow to ice conversion      Kg/m^2/s
+TMELT        upper surface melting energy flux   W/m^2
+BMELT        bottom surface melting energy flux  W/m^2
+BHEAT        ocean to ice heat flux              W/m^2
+E2MELT       heat needed to melt ice             J/m^2
+FRAZIL       energy flux of frazil formation     W/m^2
+ALB          surface albedo                      0-1
+XPRT         frozen water transport convergence  Kg/m^2/yr
+LSRC         frozen water local source           Kg/m^2/yr
+LSNK         frozen water local sink             Kg/m^2/yr
+BSNK         frozen water local bottom sink      Kg/m^2/yr
+STRAIN_ANGLE strain angle                        none
+SIGI         first stress invariant              none
+SIGII        second stress invariant             none
+STRENGTH     ice strength                        Pa*m
+UI           ice velocity - x component          m/s
+VI           ice velocity - y component          m/s
+FA_X         air stress on ice - x component     Pa
+FA_Y         air stress on ice - y component     Pa
+FI_X         ice internal stress - x component   Pa
+FI_Y         ice internal stress - y component   Pa
+FC_X         coriolis force - x component        Pa
+FC_Y         coriolis force - y component        Pa
+FW_X         water stress on ice - x component   Pa
+FW_Y         water stress on ice - y component   Pa
+UO           surface current - x component       m/s
+VO           surface current - y component       m/s
+</PRE>
+<!-- END DIAGNOSTICS --></A>
+<!--------------------------------------------------------------------->
+<A NAME="DATA_SETS">
+<HR>
+<H4>DATA SETS</H4>
+<!-- BEGIN DATA_SETS -->
+<PRE>
+
+     Data sets used.
+
+</PRE>
+<!-- END DATA_SETS --></A>
+<!--------------------------------------------------------------------->
+<A NAME="CHANGES">
+<HR>
+<H4>CHANGE HISTORY</H4>
+<!-- BEGIN CHANGES -->
+<PRE>
+<B><A HREF=".doc.log#sample.f90">Revision history</A></B>
+
+</PRE>
+<!-- END CHANGES --></A>
+<!--------------------------------------------------------------------->
+<A NAME="ERRORS">
+<HR>
+<H4>ERROR MESSAGES</H4>
+<!-- BEGIN ERRORS -->
+<PRE>
+
+     A list of error messages by routine and what it means.
+
+</PRE>
+<!-- END ERRORS --></A>
+<!--------------------------------------------------------------------->
+<A NAME="REFERENCES">
+<HR>
+<H4>REFERENCES</H4>
+<!-- BEGIN REFERENCES -->
+<PRE>
+
+     A list of references.
+
+</PRE>
+<!-- END REFERENCES --></A>
+<!--------------------------------------------------------------------->
+<A NAME="COMPILER">
+<HR>
+<H4>COMPILER SPECIFICS</H4>
+<!-- BEGIN COMPILER -->
+<PRE>
+
+     A list of compiler recommendations (might include recommended
+     compiler version or optimization options for a particular
+     system).
+
+</PRE>
+<!-- END COMPILER --></A>
+<!--------------------------------------------------------------------->
+<A NAME="PRECOMPILER">
+<HR>
+<H4>PRECOMPILER OPTIONS</H4>
+<!-- BEGIN PRECOMPILER -->
+<PRE>
+
+     A list of precompiler options.
+
+</PRE>
+<!-- END PRECOMPILER --></A>
+<!--------------------------------------------------------------------->
+<A NAME="LOADER">
+<HR>
+<H4>LOADER OPTIONS</H4>
+<!-- BEGIN LOADER -->
+<PRE>
+
+     A list of loader options (e.g., libraries) and/or
+     recommendations (note that this may be machine dependent).
+
+</PRE>
+<!-- END LOADER --></A>
+<!--------------------------------------------------------------------->
+<A NAME="BUGS">
+<HR>
+<H4>KNOWN BUGS</H4>
+<!-- BEGIN BUGS -->
+<PRE>
+
+     A list of known bugs.
+
+</PRE>
+<!-- END BUGS --></A>
+<!--------------------------------------------------------------------->
+<A NAME="NOTES">
+<HR>
+<H4>NOTES</H4>
+<!-- BEGIN NOTES -->
+<PRE>
+
+     Developer notes.
+
+</PRE>
+<!-- END NOTES --></A>
+<!--------------------------------------------------------------------->
+<A NAME="PLANS">
+<HR>
+<H4>FUTURE PLANS</H4>
+<!-- BEGIN PLANS -->
+<PRE>
+
+     Future plans.
+
+</PRE>
+<!-- END PLANS --></A>
+<!--------------------------------------------------------------------->
+
+<HR>
+</BODY>
+</HTML>

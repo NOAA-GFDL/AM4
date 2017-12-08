@@ -1,0 +1,301 @@
+<HTML>
+<TITLE>module cloud_zonal</TITLE>
+<BODY BGCOLOR="#AABBCC" TEXT="#332211" >
+
+<DIV ALIGN="CENTER"> <FONT SIZE=1>
+<A HREF="#INTERFACE">PUBLIC INTERFACE</A> / 
+<A HREF="#ROUTINES">ROUTINES</A> / 
+<A HREF="#CHANGES">CHANGES</A> / 
+<A HREF="#ERRORS">ERRORS</A> / 
+<A HREF="#REFERENCES">REFERENCES</A> / 
+<A HREF="#NOTES">NOTES</A> 
+</FONT>
+<P><I>Last updated on <!--#exec cmd="echo $LAST_MODIFIED" -->.</I>
+<BR><BR></DIV><HR>
+
+
+<H2>Module Cloud_zonal</H2>
+<A NAME="HEADER">
+<PRE>
+     Version: v1.0
+     Date:    August 4, 1999
+     Contact: Bruce Wyman
+</PRE>
+</A><!-- END HEADER -->
+<!--------------------------------------------------------------------->
+<A NAME="OVERVIEW">
+<HR>
+<H4>OVERVIEW</H4>
+<!-- BEGIN OVERVIEW -->
+<PRE>
+
+     Returns zonal (London) cloud amount and location (level) on
+     the model grid for high, middle, and low clouds.
+
+</PRE>
+</A><!-- END OVERVIEW -->
+<!--------------------------------------------------------------------->
+<A NAME="DESCRIPTION">
+<!-- BEGIN DESCRIPTION -->
+<PRE>
+
+     This module interpolates in space and time the zonal mean, seasonally
+     varying cloud amounts for the given model grid (lat/pres) and time.
+
+</PRE>
+</A><!-- END DESCRIPTION -->
+<!--------------------------------------------------------------------->
+<A NAME="MODULES_USED">
+<HR>
+<H4>OTHER MODULES USED</H4>
+<!-- BEGIN MODULES_USED -->
+<PRE>
+
+    time_manager_mod
+     time_interp_mod
+       utilities_mod
+
+</PRE>
+</A><!-- END MODULES_USED -->
+<!--------------------------------------------------------------------->
+<A NAME="INTERFACE">
+<HR>
+<H4>PUBLIC INTERFACE</H4>
+<!-- BEGIN INTERFACE -->
+<PRE>
+
+  use cloud_zonal_mod [, only: cloud_zonal_init, cloud_zonal, getcld ]
+
+  cloud_zonal_init - Initialization routine that is called once.
+                     The default behavior is for seasonally varying
+                     clouds. To specify clouds that do not vary in
+                     time this routine must be called with a particular
+                     season. There is no option for annual mean clouds.
+
+  cloud_zonal - Returns the zonal cloud amounts, location (model level),
+                and cloud properties on the model grid at the specified time.
+
+  getcld      - Returns only the zonal cloud amounts and location (model level)
+                on the model grid at the specified time.
+
+</PRE>
+</A><!-- END INTERFACE -->
+<!--------------------------------------------------------------------->
+<A NAME="ROUTINES">
+<HR>
+<H4>PUBLIC ROUTINES</H4>
+<!-- BEGIN ROUTINES -->
+<PRE>
+
+call cloud_zonal_init (season)
+
+  Input
+
+     season    Season for returned data.  [integer]
+                  The following are valid values:
+                       1 = winter
+                       2 = spring
+                       3 = summer
+                       4 = fall
+                       5 = seasonal varying
+
+Note: This routine does not need to called. If this routine was not called
+      previously, then routine getcld (and cloud_zonal) will call it with
+      seasonal varying clouds (season=5).
+
+-----------------------------------------------------------------------
+
+subroutine cloud_zonal (time, lat, phalf,  &
+                        nclds, ktopsw, kbtmsw, ktoplw, kbtmlw,  &
+                        cldamt, cuvrf, cirrf, cirab, emcld)
+
+  Input
+
+      time      The current time. Used only when seasonal varying clouds
+                (season=5) have been initialized.  [time_type]
+
+      lat       The (mean) latitude in radians of all grid boxes.
+                   [real, dimension(:,:)]
+
+      phalf     Pressure in pascals at half model levels. Should be normalized
+                so that the pressure at level nlev+1 is 101325 pascals, this
+                will insure that all grid boxes have three cloud levels.
+                   [real, dimension(:,:,nlev+1)]
+
+  Output
+
+     nclds       The number of clouds in a vertical column at each grid box.
+                 This routine will return nclds=3 at all grid points.
+                   [integer, dimension(:,:)]
+
+     ktopsw,     The top and bottom index (at layer interfaces) for high,
+       kbtmsw    middle, and low clouds for shortwave calculations.
+                   [integer, dimension(:,:,3)]
+
+     ktopsw,     The top and bottom index (at model levels) for high,
+       kbtmlw    middle, and low clouds for longwave calculations.
+                   [integer, dimension(:,:,3)]
+
+     cldamt      The fractional cloud amount for high, middle, and low clouds.
+                   [real, dimension(:,:,3)]
+
+     cuvrf       The fractional amount of ultraviolet radiation reflected for
+                 high, middle, and low clouds.  [real, dimension(:,:,3)]
+
+     cirrf       The fractional amount of infrared radiation reflected for
+                 high, middle, and low clouds.  [real, dimension(:,:,3)]
+
+     cirab       The fractional amount of infrared radiation absorbed for high,
+                 middle, and low clouds.  [real, dimension(:,:,3)]
+
+     emcld       The emissivity for high, middle, and low clouds.
+                 This routine will return emcld=1 for all clouds.
+                   [real, dimension(:,:,3)]
+
+-----------------------------------------------------------------------
+
+subroutine getcld (time, lat, phalf, ktopsw, kbtmsw, cldamt)
+
+  Input
+
+      time      The current time. Used only when seasonal varying clouds
+                (season=5) have been initialized.  [time_type]
+
+      lat       The (mean) latitude in radians of all grid boxes.
+                   [real, dimension(:,:)]
+
+      phalf     Pressure in pascals at half model levels. Should be normalized
+                so that the pressure at level nlev+1 is 101325 pascals, this
+                will insure that all grid boxes have three cloud levels.
+                   [real, dimension(:,:,nlev+1)]
+
+  Output
+
+     ktopsw,     The top and bottom index (at layer interfaces) for high,
+       kbtmsw    middle, and low clouds for shortwave calculations.
+                   [integer, dimension(:,:,3)]
+
+     ktopsw,     The top and bottom index (at model levels) for high,
+       kbtmlw    middle, and low clouds for longwave calculations.
+                   [integer, dimension(:,:,3)]
+
+     cldamt      The fractional cloud amount for high, middle, and low clouds.
+                   [real, dimension(:,:,3)]
+
+</PRE>
+</A><!-- END ROUTINES -->
+<!--------------------------------------------------------------------->
+<A NAME="DATA_SETS">
+<HR>
+<H4>DATA SETS</H4>
+<!-- BEGIN DATA_SETS -->
+<PRE>
+
+   The data used for this module is contained internally in the code.
+   The amount and pressure altitude data for zonal clouds is for every
+   5 degrees latitude and all four seasons (DJF, etc....) for high,
+   middle, and low clouds.
+
+   Because the original (London) data was not accessible, the data
+   contained in this module was derived from an 18 level version of
+   the GFDL Experimental Prediction Group spectral model.
+
+   Cloud reflectivity and absorptivity is defined internally as
+   global mean values for high, middle, and low clouds.
+
+   The following table summaries these values:
+
+               |  uv ref    ir ref    ir abs
+        -------+-------------------------------
+          high |  .210   |  .210   |  .005
+          mid  |  .450   |  .450   |  .020
+          low  |  .590   |  .590   |  .035
+
+</PRE>
+</A><!-- END DATA_SETS -->
+<!--------------------------------------------------------------------->
+<A NAME="CHANGES">
+<HR>
+<H4>CHANGE HISTORY</H4>
+<!-- BEGIN CHANGES -->
+<PRE>
+
+     No recent changes.
+
+</PRE>
+</A><!-- END CHANGES -->
+<!--------------------------------------------------------------------->
+<A NAME="ERRORS">
+<HR>
+<H4>ERROR MESSAGES</H4>
+<!-- BEGIN ERRORS -->
+<PRE>
+
+<b>Fatal Errors in cloud_zonal_init</b>
+
+    <b>initialization routine can not be called twice</b>
+         You have attemped to call cloud_zonal_init more than once.
+
+    <b>invalid value of season</b>
+         The value of season must be between 1 and 5.
+         See the documentation for cloud_zonal_init.
+
+</PRE>
+</A><!-- END ERRORS -->
+<!--------------------------------------------------------------------->
+<A NAME="REFERENCES">
+<HR>
+<H4>REFERENCES</H4>
+<!-- BEGIN REFERENCES -->
+<PRE>
+
+     London, J., 1957: A study of the atmospheric heat balance.
+        Final Report, AFCRC Contract AF19 (122)-165, 99 pp.,
+        N.Y. Univ.
+
+</PRE>
+</A><!-- END REFERENCES -->
+<!--------------------------------------------------------------------->
+<A NAME="BUGS">
+<HR>
+<H4>KNOWN BUGS</H4>
+<!-- BEGIN BUGS -->
+<PRE>
+
+     There are no known bugs.
+
+</PRE>
+</A><!-- END BUGS -->
+<!--------------------------------------------------------------------->
+<A NAME="NOTES">
+<HR>
+<H4>NOTES</H4>
+<!-- BEGIN NOTES -->
+<PRE>
+
+   1) The time interpolation is done linearly bewteen seasons.
+   2) High clouds are interpolated using the top (interface) pressure
+      in a model layer.  All high clouds are one model layer thick.
+   3) Middle clouds are interpolated using the average (top+bottom
+      interface) pressure. All middle clouds are one model layer thick.
+   4) Low clouds are interpolated using top and bottom (interface)
+      pressures separately. Low clouds can be more than one model layer thick.
+
+</PRE>
+</A><!-- END NOTES -->
+<!--------------------------------------------------------------------->
+<A NAME="PLANS">
+<HR>
+<H4>FUTURE PLANS</H4>
+<!-- BEGIN PLANS -->
+<PRE>
+
+     None.
+
+</PRE>
+</A><!-- END PLANS -->
+<!--------------------------------------------------------------------->
+
+<HR>
+</BODY>
+</HTML>
