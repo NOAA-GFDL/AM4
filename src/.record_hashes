@@ -1,0 +1,9 @@
+These are the original hashes that correspond to the GFDL internal gitlab:
+
+atmos_cubed_sphere b8b05bf650c0d3293b538bdaceb894ba0fd6910b
+atmos_drivers 5ee95d6abf0879594551dd7e6635dff4004c4010
+atmos_param 2e94acfd8621e85216bf822c395a8c3f15a511a5
+atmos_shared a557d4d7bab033ef1ad1d400a62fe07a97ccb477
+ice_param 1553c8bc4f9a66791c89367b6f327147523155ed
+ice_sis ccc7328dcd79706dd5c17c8bab660222886fc80b
+land_lad2 a220288ecb289bf9d793d051fc5076072874ce07
