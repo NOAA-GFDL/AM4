@@ -1,9 +1,0 @@
-GBL:Global             |  -20:340 | -60:90 
-NAM:North America      | -170:-55 |  24:72
-SAM:South America      |  -85:-32 | -58:14
-EUR:Europe             |  -12:40  |  36:72
-EUA:Eurasia            |  -12:190 |  36:78
-ASA:Asia               |   35:190 |   7:83
-SEA:SE Asia            |   90:150 | -11:25
-AUS:Australia          |  110:180 | -48:-10
-AFR:Africa             |  -20:52  | -36:38
