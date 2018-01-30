@@ -1,6 +1,8 @@
 This directory comprises of some of the climate analysis suites run at NOAA GFDL and used in the AM4 documentation papers. 
 This is an attempt to package the scripts in the form of a notebook. 
-Within each analysis directory, there is a jupyter notebook, both readable and runnable from your local jupyter environment with all dependencies installed. 
+Within each analysis directory, there is a jupyter notebook, both readable and runnable from your local jupyter environment with all dependencies installed.
+E.g. https://github.com/aradhakrishnanGFDL/sandbox/blob/test/analysis/cjs1/radiation_atmos_av_mon/radiation_atmos_av_mon.ipynb
+ 
 Please refer to https://www.gfdl.noaa.gov/am4.0-model for details about where to find model and OBS data used in the papers. 
 
 Please direct your questions and feedback to gfdl.climate.model.info@noaa.gov  
