@@ -30,9 +30,9 @@ Within each analysis suite, there is a jupyter notebook, both readable and runna
 
 E.g.
 
-* [Radiation processor](https://github.com/NOAA-GFDL/AM4/blob/master/analysis/cjs1/radiation_atmos_av_mon/radiation_atmos_av_mon.ipynb)
-* [Long-term DJF seasonal mean](https://github.com/NOAA-GFDL/AM4/blob/master/analysis/bw/bw_atmos_cru_ts_a1r/bw_atmos_monthly_cru_ts.1980-2014.ipynb) 
-* [Zonal_mean_zonal_wind_stress](https://github.com/NOAA-GFDL/AM4/blob/master/analysis/bw/bw_atmos_zm_atl_pac_a1r/bw_atmos_atl_pac.1980-2014.ipynb)
+* [Radiation processor](analysis/cjs1/radiation_atmos_av_mon/radiation_atmos_av_mon.ipynb)
+* [Long-term DJF seasonal mean](analysis/bw/bw_atmos_cru_ts_a1r/bw_atmos_monthly_cru_ts.1980-2014.ipynb) 
+* [Zonal_mean_zonal_wind_stress](analysis/bw/bw_atmos_zm_atl_pac_a1r/bw_atmos_atl_pac.1980-2014.ipynb)
 
 Please refer https://www.gfdl.noaa.gov/am4.0-model for details about where to find model and OBS data used in the papers.
 
