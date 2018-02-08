@@ -29,6 +29,7 @@ from pprint import pprint
 
 
 def create_plot(args):
+
     # CREATE VCS OBJECT AS A PORTAIT PLOT AND LOAD PLOT SETTINGS FOR TEST CASE 
     x=vcs.init()
     x.portrait()
@@ -44,10 +45,10 @@ def create_plot(args):
     P.PLOT_SETTINGS.x2 = .85
     P.PLOT_SETTINGS.y1 = .22
     P.PLOT_SETTINGS.y2 = .95
-    #P.PLOT_SETTINGS.xtic2.y1=P.PLOT_SETTINGS.y1
-    #P.PLOT_SETTINGS.xtic2.y2=P.PLOT_SETTINGS.y2
-    #P.PLOT_SETTINGS.ytic2.x1=P.PLOT_SETTINGS.x1
-    #P.PLOT_SETTINGS.ytic2.x2=P.PLOT_SETTINGS.x2
+    P.PLOT_SETTINGS.xtic2.y1=P.PLOT_SETTINGS.y1
+    P.PLOT_SETTINGS.xtic2.y2=P.PLOT_SETTINGS.y2
+    P.PLOT_SETTINGS.ytic2.x1=P.PLOT_SETTINGS.x1
+    P.PLOT_SETTINGS.ytic2.x2=P.PLOT_SETTINGS.x2
     # Logo is simply a vcs text object, set to None for off
     P.PLOT_SETTINGS.logo = None
     # timestamp is simply a vcs text object, set to None for off
@@ -69,10 +70,11 @@ def create_plot(args):
     mods = set()
 
     # CMIP5 METRICS RESULTS - CURRENTLY USING FOR CONTROL SIMULATIONS
-    if args.cmip_compare:
-        #cmip_json_files = glob.glob(os.path.join('/home/eem/metrics_latest_v1p1p1/share','CMIP_metrics_results','CMIP5',args.mode,'*json'))
-        cmip_json_files = glob.glob(os.path.join('/home/a1r/metrics_latest_v1p1p1/share/','CMIP_metrics_results','CMIP5',args.mode,'*json'))
-
+    cmip_json_files = list()
+    if CMIP_COMPARE:
+#        cmip_json_files = glob.glob(os.path.join('/home/eem/metrics_latest_v1p1p1/share','CMIP_metrics_results','CMIP5',args.mode,'*json'))
+        cmip_json_files = glob.glob("/work/mdteam/pcmdi_metrics/v1p1p2/PMP-cmip5-amip-clims/*regrid2_regrid2_metrics.json")
+        
     # ADD GFDL JSON FILES... 
     # This is pretty hard coded might want to consider more magic
     json_files = []
@@ -81,7 +83,7 @@ def create_plot(args):
         dir_files = glob.glob(os.path.join(input_dir,'*.json'))
         with open(dir_files[0], "r") as f:
             data = json.load(f)
-
+        print data.keys()
         input_experiments.append(data["RESULTS"].keys()[0])
         json_files += dir_files
         
@@ -91,20 +93,18 @@ def create_plot(args):
         sys.exit(1)
 
     json_files += cmip_json_files
-    #Aparna edits, to work in jupyter
-    EXCLUDE_MODELS = list()
-    if args.exclude:
-        EXCLUDE_MODELS = [ model.lower() for model in args.exclude.split(",") ]
+
     # CONSTRUCT PYTHON DICTIONARY WITH RESULTS METRICS USED IN PORTRAIT  
     non_mods = ["GridInfo","References","RegionalMasking","metrics_git_sha1","uvcdat_version"]
     for fnm in json_files:
+        print fnm
         f=open(fnm)
         d = json.load(f)
         var = os.path.basename(fnm).split("_")[0]
         for m in d['RESULTS'].keys():
             # Skip non model bits`
             if m not in non_mods:
-                if args.gfdl_compare:
+                if GFDL_COMPARE:
                     if 'GFDL' in m or m in input_experiments:
                         if m.lower() not in EXCLUDE_MODELS:
                             mods.add(m)
@@ -140,12 +140,21 @@ def create_plot(args):
         # LOOP OVER MODEL
         for mn,mod in enumerate(mods):
             try:
-                out1_rel[vn,mn] = float(var_cmip5_dics[var]['RESULTS'][mod]["defaultReference"]["r1i1p1"]["global"]['rms_xy_djf'])
-                out2_rel[vn,mn] = float(var_cmip5_dics[var]['RESULTS'][mod]["defaultReference"]["r1i1p1"]["global"]['rms_xy_mam'])
-                out3_rel[vn,mn] = float(var_cmip5_dics[var]['RESULTS'][mod]["defaultReference"]["r1i1p1"]["global"]['rms_xy_jja'])
-                out4_rel[vn,mn] = float(var_cmip5_dics[var]['RESULTS'][mod]["defaultReference"]["r1i1p1"]["global"]['rms_xy_son'])
-            except Exception,err:
+                out1_rel[vn,mn] = float(var_cmip5_dics[var]['RESULTS'][mod]["default"]["r1i1p1"]["global"]['rms_xy']['djf'])
+                out2_rel[vn,mn] = float(var_cmip5_dics[var]['RESULTS'][mod]["default"]["r1i1p1"]["global"]['rms_xy']['mam'])
+                out3_rel[vn,mn] = float(var_cmip5_dics[var]['RESULTS'][mod]["default"]["r1i1p1"]["global"]['rms_xy']['jja'])
+                out4_rel[vn,mn] = float(var_cmip5_dics[var]['RESULTS'][mod]["default"]["r1i1p1"]["global"]['rms_xy']['son'])
+            except Exception, err:
                 pass
+
+            if not out1_rel[vn,mn]:
+                try:
+                    out1_rel[vn,mn] = float(var_cmip5_dics[var]['RESULTS'][mod]["defaultReference"]["r1i1p1"]["global"]['rms_xy']['djf'])
+                    out2_rel[vn,mn] = float(var_cmip5_dics[var]['RESULTS'][mod]["defaultReference"]["r1i1p1"]["global"]['rms_xy']['mam'])
+                    out3_rel[vn,mn] = float(var_cmip5_dics[var]['RESULTS'][mod]["defaultReference"]["r1i1p1"]["global"]['rms_xy']['jja'])
+                    out4_rel[vn,mn] = float(var_cmip5_dics[var]['RESULTS'][mod]["defaultReference"]["r1i1p1"]["global"]['rms_xy']['son'])
+                except Exception,err:
+                    pass
     
         med_rms1 = np.ma.median(out1_rel[vn,:])
         med_rms2 = np.ma.median(out2_rel[vn,:])
@@ -207,8 +216,9 @@ if __name__ == "__main__":
                         required=False)
     parser.add_argument("-g", "--gfdl_compare", help="Option to only compare against GFDL CMIP models.", action="store_true", default=False)
     parser.add_argument("-c", "--cmip_compare", help="Option to only compare against the cmip_models.", action="store_false", default=True) 
+    parser.add_argument("-n", "--no_cmip_models", help="Only compare against the models on the commandline.", action="store_true", default=False)
     parser.add_argument("-v", "--variables", help="Comma delimited list of variables to show.",
-                        default="pr,psl,tas,rlut,rsut,ua-850,ua-200,va-850,va-200,zg-500", required=False)
+                        default="pr,psl,tas,rlut,rst,ua-850,ua-200,va-850,va-200,zg-500", required=False)
     parser.add_argument("-x", "--exclude", help="Comma delimited list to exclude CMIP5 models.", required=False)
     parser.add_argument("-m", "--mode", help="The option to change which version of the data to compare against.", default="amip")
     parser.add_argument("argv", nargs=argparse.REMAINDER)
@@ -223,12 +233,17 @@ if __name__ == "__main__":
 
     GFDL_COMPARE = args.gfdl_compare
     CMIP_COMPARE = args.cmip_compare
+    NO_CMIP = args.no_cmip_models
     if len(args.argv) == 1:
         # only one model provided on the commandline, so lets compare against CMIP!
         CMIP_COMPARE = True
 
     if GFDL_COMPARE and not CMIP_COMPARE:
         CMIP_COMPARE = True
+
+    if NO_CMIP:
+        GFDL_COMPARE = False
+        CMIP_COMPARE = False
 
     for input_dir in args.argv:
         if not os.path.exists(input_dir):
