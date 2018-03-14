@@ -33,6 +33,7 @@ E.g.
 * [Radiation processor](analysis/cjs1/radiation_atmos_av_mon/radiation_atmos_av_mon.ipynb)
 * [Long-term DJF seasonal mean](analysis/bw/bw_atmos_cru_ts_a1r/bw_atmos_monthly_cru_ts.1980-2014.ipynb) 
 * [Zonal_mean_zonal_wind_stress](analysis/bw/bw_atmos_zm_atl_pac_a1r/bw_atmos_atl_pac.1980-2014.ipynb)
+* [PCMDI Metrics Portrait Plot](analysis/pcmdimetrics/portraitPlot-AM4.AMIP.ipynb)
 
 Please refer https://www.gfdl.noaa.gov/am4.0-model for details about where to find model and OBS data used in the papers.
 
