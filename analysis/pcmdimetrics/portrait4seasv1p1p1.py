@@ -70,8 +70,7 @@ def create_plot(args):
 
     # CMIP5 METRICS RESULTS - CURRENTLY USING FOR CONTROL SIMULATIONS
     if args.cmip_compare:
-        #cmip_json_files = glob.glob(os.path.join('/home/eem/metrics_latest_v1p1p1/share','CMIP_metrics_results','CMIP5',args.mode,'*json'))
-        cmip_json_files = glob.glob(os.path.join('/home/a1r/metrics_latest_v1p1p1/share/','CMIP_metrics_results','CMIP5',args.mode,'*json'))
+        cmip_json_files = glob.glob(os.path.join(args.cmipmetrics,'CMIP_metrics_results','CMIP5',args.mode,'*json'))
 
     # ADD GFDL JSON FILES... 
     # This is pretty hard coded might want to consider more magic
@@ -211,6 +210,10 @@ if __name__ == "__main__":
                         default="pr,psl,tas,rlut,rsut,ua-850,ua-200,va-850,va-200,zg-500", required=False)
     parser.add_argument("-x", "--exclude", help="Comma delimited list to exclude CMIP5 models.", required=False)
     parser.add_argument("-m", "--mode", help="The option to change which version of the data to compare against.", default="amip")
+<<<<<<< HEAD
+=======
+    parser.add_argument("-s", "--cmipMetrics", help="specifies metrics location  computed from other CMIP models. specify path till share directory only", default="/home/a1r/metrics_latest_v1p1p1/share/")
+>>>>>>> 76717f2ec0e6c273e9b68e60eaf5a8f0057abe64
     parser.add_argument("argv", nargs=argparse.REMAINDER)
     args = parser.parse_args()
  
