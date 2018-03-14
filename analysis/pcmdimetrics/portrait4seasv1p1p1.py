@@ -12,7 +12,7 @@
 try:
     import vcs
 except:
-    raise RuntimeError("Sorry your python is not build with VCS support and cannot generate portrait plots")
+    raise RuntimeError("Package: vcs, not found to generate portrait plots")
 
 # STANDARD PYTHON MODULES
 import glob
@@ -20,13 +20,22 @@ import json
 import os
 import sys
 import re
-import numpy as np
+try:
+    import numpy as np
+except:
+    raise RuntimeError("Package: numpy, not found.")
+
 # CDAT MODULES
-import pcmdi_metrics.graphics.portraits
-import MV2
+try:
+    import pcmdi_metrics.graphics.portraits
+except:
+    raise RuntimeError("Package: pcmdi_metrics.graphics.portraits not found.")    
+try:
+    import MV2
+except:
+    raise RuntimeError("Package: MV2 not found.")
 import argparse
 from pprint import pprint
-
 
 def create_plot(args):
     # CREATE VCS OBJECT AS A PORTAIT PLOT AND LOAD PLOT SETTINGS FOR TEST CASE 
