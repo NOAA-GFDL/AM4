@@ -7,6 +7,9 @@ git clone -r https://github.com/NOAA-GFDL/AM4.git
 ```
 
 # Source Code
+
+[![DOI](https://zenodo.org/badge/102487636.svg)](https://zenodo.org/badge/latestdoi/102487636)
+
 The source code is located in the src directory. This repository contains the code for the following
 folders:
 
