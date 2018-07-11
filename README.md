@@ -37,7 +37,6 @@ The following folders are available on github with instructions and supporting f
 
 The input data required for running the AM4 model can be found in [GFDL's data portal](ftp://nomads.gfdl.noaa.gov/users/Ming.Zhao/AM4Documentation/GFDL-AM4.0/)
 
-
 # Analysis Scripts 
 Some of the climate analysis scripts run at NOAA GFDL and used in the AM4 documentation papers are located in the analysis directory.
 Within each analysis suite, there is a jupyter notebook, both readable and runnable from your local jupyter environment, provided all dependencies are installed.
@@ -54,6 +53,9 @@ Please refer https://www.gfdl.noaa.gov/am4.0-model for details about where to fi
 For all analysis figures and pertaining data, please use the AM4 documentation papers as the original reference.
 Please direct your questions and feedback to gfdl.climate.model.info@noaa.gov
 
+# Model output and other references
+
+* [Link to model output Additional Info](http://data1.gfdl.noaa.gov/nomads/forms/am4.0/)
 
 # Disclaimer
 
