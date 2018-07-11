@@ -27,6 +27,17 @@ The following folders are available on github and are linked as git submodules
 * coupler
 * shared
 
+# Building AM4
+
+The following folders are available on github with instructions and supporting files.
+
+* build
+
+# Obtaining the Input data
+
+The input data required for running the AM4 model can be found in [GFDL's data portal](ftp://nomads.gfdl.noaa.gov/users/Ming.Zhao/AM4Documentation/GFDL-AM4.0/)
+
+
 # Analysis Scripts 
 Some of the climate analysis scripts run at NOAA GFDL and used in the AM4 documentation papers are located in the analysis directory.
 Within each analysis suite, there is a jupyter notebook, both readable and runnable from your local jupyter environment, provided all dependencies are installed.
