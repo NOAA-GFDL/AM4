@@ -105,50 +105,50 @@ mkdir -p $bld_dir/fms
 list_paths -o $bld_dir/fms/pathnames_fms $src_dir/shared
 cd $bld_dir
 pushd fms
-mkmf -m Makefile -a $src_dir -b $bld_dir -p libfms.a -t $mkmf_template -g -c "-DINTERNAL_FILE_NML -g -Duse_libMPI -Duse_netCDF" -Imom6/src/MOM6/pkg/CVMix-src/include -Ishared/include -Ishared/mpp/include $bld_dir/fms/pathnames_fms
+mkmf -m Makefile -a ../$src_dir -b $bld_dir -p libfms.a -t $mkmf_template -g -c "-DINTERNAL_FILE_NML -g -Duse_libMPI -Duse_netCDF" -IMOM6/pkg/CVMix-src/include -Ishared/include -Ishared/mpp/include $bld_dir/fms/pathnames_fms
 popd
 
 mkdir -p $bld_dir/atmos_phys
 list_paths -o $bld_dir/atmos_phys/pathnames_atmos_phys $src_dir/atmos_param $src_dir/atmos_shared
 cd $bld_dir
 pushd atmos_phys
-mkmf -m Makefile -a $src_dir -b $bld_dir -p libatmos_phys.a -t $mkmf_template -g -c "-DINTERNAL_FILE_NML -g" -o "-I$bld_dir/fms" -Imom6/src/MOM6/pkg/CVMix-src/include -Ishared/include -Ishared/mpp/include $bld_dir/atmos_phys/pathnames_atmos_phys
+mkmf -m Makefile -a ../$src_dir -b $bld_dir -p libatmos_phys.a -t $mkmf_template -g -c "-DINTERNAL_FILE_NML -g" -o "-I$bld_dir/fms" -IMOM6/pkg/CVMix-src/include -Ishared/include -Ishared/mpp/include $bld_dir/atmos_phys/pathnames_atmos_phys
 popd
 
 mkdir -p $bld_dir/atmos_dyn
 list_paths -o $bld_dir/atmos_dyn/pathnames_atmos_dyn $src_dir/atmos_drivers/coupled $src_dir/atmos_cubed_sphere/driver/coupled $src_dir/atmos_cubed_sphere/model $src_dir/atmos_cubed_sphere/model_nh_null $src_dir/atmos_cubed_sphere/tools $src_dir/atmos_cubed_sphere/GFDL_tools
 cd $bld_dir
 pushd atmos_dyn
-mkmf -m Makefile -a $src_dir -b $bld_dir -p libatmos_dyn.a -t $mkmf_template -g -c "-DINTERNAL_FILE_NML -g -DSPMD -DCLIMATE_NUDGE" -o "-I$bld_dir/atmos_phys -I$bld_dir/fms" -Imom6/src/MOM6/pkg/CVMix-src/include -Ishared/include -Ishared/mpp/include $bld_dir/atmos_dyn/pathnames_atmos_dyn
+mkmf -m Makefile -a ../$src_dir -b $bld_dir -p libatmos_dyn.a -t $mkmf_template -g -c "-DINTERNAL_FILE_NML -g -DSPMD -DCLIMATE_NUDGE" -o "-I$bld_dir/atmos_phys -I$bld_dir/fms" -IMOM6/pkg/CVMix-src/include -Ishared/include -Ishared/mpp/include $bld_dir/atmos_dyn/pathnames_atmos_dyn
 popd
 
 mkdir -p $bld_dir/ice_sis
 list_paths -o $bld_dir/ice_sis/pathnames_ice_sis $src_dir/ice_sis $src_dir/ice_param
 cd $bld_dir
 pushd ice_sis
-mkmf -m Makefile -a $src_dir -b $bld_dir -p libice_sis.a -t $mkmf_template -g -c "-DINTERNAL_FILE_NML -g -Duse_netCDF" -o "-I$bld_dir/mom6 -I$bld_dir/fms" -Imom6/src/MOM6/pkg/CVMix-src/include -Ishared/include -Ishared/mpp/include $bld_dir/ice_sis/pathnames_ice_sis
+mkmf -m Makefile -a ../$src_dir -b $bld_dir -p libice_sis.a -t $mkmf_template -g -c "-DINTERNAL_FILE_NML -g -Duse_netCDF" -o "-I$bld_dir/mom6 -I$bld_dir/fms" -IMOM6/pkg/CVMix-src/include -Ishared/include -Ishared/mpp/include $bld_dir/ice_sis/pathnames_ice_sis
 popd
 
 mkdir -p $bld_dir/land_lad2
 list_paths -o $bld_dir/land_lad2/pathnames_land_lad2 $src_dir/land_lad2
 cd $bld_dir
 pushd land_lad2
-mkmf -m Makefile -a $src_dir -b $bld_dir -p libland_lad2.a -t $mkmf_template --use-cpp -g -c "-DINTERNAL_FILE_NML -g -nostdinc " -o "-I$bld_dir/fms" -Imom6/src/MOM6/pkg/CVMix-src/include -Ishared/include -Ishared/mpp/include $bld_dir/land_lad2/pathnames_land_lad2
+mkmf -m Makefile -a ../$src_dir -b $bld_dir -p libland_lad2.a -t $mkmf_template --use-cpp -g -c "-DINTERNAL_FILE_NML -g -nostdinc " -o "-I$bld_dir/fms" -IMOM6/pkg/CVMix-src/include -Ishared/include -Ishared/mpp/include $bld_dir/land_lad2/pathnames_land_lad2
 # -I/usr/include -I/usr/lib64/gfortran/modules
 popd
 
 mkdir -p $bld_dir/mom6
-list_paths -o $bld_dir/mom6/pathnames_mom6 $src_dir/mom6/src/MOM6/config_src/dynamic $src_dir/mom6/src/MOM6/config_src/coupled_driver $src_dir/mom6/src/MOM6/src/*/ $src_dir/mom6/src/MOM6/src/*/*/ $src_dir/ocean_shared/generic_tracers $src_dir/ocean_shared/mocsy/src
+list_paths -o $bld_dir/mom6/pathnames_mom6 $src_dir/MOM6/config_src/dynamic $src_dir/MOM6/config_src/coupled_driver $src_dir/MOM6/src/*/ $src_dir/MOM6/src/*/*/ $src_dir/ocean_shared/generic_tracers $src_dir/ocean_shared/mocsy/src
 cd $bld_dir
 pushd mom6
-mkmf -m Makefile -a $src_dir -b $bld_dir -p libmom6.a -t $mkmf_template -g -c "-DINTERNAL_FILE_NML -g -DMAX_FIELDS_=100 -DNOT_SET_AFFINITY -D_USE_MOM6_DIAG -D_USE_GENERIC_TRACER -DUSE_PRECISION=2 -D_FILE_VERSION="'"`git-version-string $<`"'"" -o "-I$bld_dir/fms" -Imom6/src/MOM6/pkg/CVMix-src/include -Ishared/include -Ishared/mpp/include $bld_dir/mom6/pathnames_mom6
+mkmf -m Makefile -a ../$src_dir -b $bld_dir -p libmom6.a -t $mkmf_template -g -c "-DINTERNAL_FILE_NML -g -DMAX_FIELDS_=100 -DNOT_SET_AFFINITY -D_USE_MOM6_DIAG -D_USE_GENERIC_TRACER -DUSE_PRECISION=2 -D_FILE_VERSION="'"`git-version-string $<`"'"" -o "-I$bld_dir/fms" -IMOM6/pkg/CVMix-src/include -Ishared/include -Ishared/mpp/include $bld_dir/mom6/pathnames_mom6
 popd
 
 mkdir -p $bld_dir/coupler
 list_paths -o $bld_dir/coupler/pathnames_coupler $src_dir/coupler
 cd $bld_dir
 pushd coupler
-mkmf -m Makefile -a $src_dir -b $bld_dir -p libcoupler.a -t $mkmf_template -g -c "-DINTERNAL_FILE_NML -g" -o "-I$bld_dir/atmos_dyn -I$bld_dir/ice_sis -I$bld_dir/atmos_phys -I$bld_dir/mom6 -I$bld_dir/land_lad2 -I$bld_dir/fms" -Imom6/src/MOM6/pkg/CVMix-src/include -Ishared/include -Ishared/mpp/include $bld_dir/coupler/pathnames_coupler
+mkmf -m Makefile -a ../$src_dir -b $bld_dir -p libcoupler.a -t $mkmf_template -g -c "-DINTERNAL_FILE_NML -g" -o "-I$bld_dir/atmos_dyn -I$bld_dir/ice_sis -I$bld_dir/atmos_phys -I$bld_dir/mom6 -I$bld_dir/land_lad2 -I$bld_dir/fms" -IMOM6/pkg/CVMix-src/include -Ishared/include -Ishared/mpp/include $bld_dir/coupler/pathnames_coupler
 popd
 
 # ---------------- call make on the main Makefile
