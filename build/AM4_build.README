@@ -1,19 +1,17 @@
---- Requirements ---
+## Requirements
         netcdf          https://www.unidata.ucar.edu/software/netcdf/
         hdf5            https://www.unidata.ucar.edu/software/netcdf/
         mkmf            https://github.com/NOAA-GFDL/mkmf
         list_paths      https://github.com/NOAA-GFDL/mkmf
         c-shell
         compiler
---- End Requirements ---
 
---- Quick Compiling Instructions ---
+## Quick Compiling Instructions 
 1. tcsh
 2. cd build
 3. ./compile.csh |& tee log.compile
---- End Quick Compiling Instructions ---
 
---- Important Notes ---
+## Important Notes 
 The compile script is a csh script.  If you are already in csh or tcsh, you can 
 skip 1.
 
@@ -56,5 +54,4 @@ NOTE: if compiling with gcc/gfortran, do not compile with openMP.  Remove it
 from the make line in the compile script
 }
 
----End Important Notes ---
 
