@@ -14,7 +14,7 @@ site](http://data1.gfdl.noaa.gov/nomads/forms/am4.0/) at the
 [Geophysical Fluid Dynamics Laboratory
 (GFDL)](https://www.gfdl.noaa.gov).
 
-The layout of this pacakge includes the following directories:
+The layout of this package includes the following directories:
 
 * src - The source code for the AM4 model
 * exec - The build directory with Makefiles for building the model executable
@@ -33,7 +33,7 @@ use the following git command
 git clone -r https://github.com/NOAA-GFDL/AM4.git
 ```
 
-The `-r` option to `git clone` instructs git to recursivly clone all
+The `-r` option to `git clone` instructs git to recursively clone all
 submodules.  In the event the repository was not cloned using the `-r`
 recursive option, the following step must be taken to obtain all sources:
 
