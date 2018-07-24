@@ -59,9 +59,9 @@ includes a single version of the following GFDL model components:
 The following components are available in the
 [NOAA-GFDL](https://github.com/NOAA-GFDL) github organization:
 
-* MOM6
-* coupler
-* shared
+* [MOM6](https://github.com/NOAA-GFDL/MOM6)
+* [coupler](https://github.com/NOAA-GFDL/coupler)
+* [FMS](https://github.com/NOAA-GFDL/FMS) (as [shared](src/shared))
 
 ## Building AM4
 
