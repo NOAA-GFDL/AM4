@@ -80,7 +80,7 @@ the Intel compilers, the netCDF 4 library and the MPICH2 MPI library.
 Included in the [intel.mk](exec/templates/intel.mk) file are
 additional settings that can be modified during the build.
 
-## [obtaining the input data]
+## Obtaining the input data
 
 The input data required for running the AM4 model can be found on
 [GFDL's data
