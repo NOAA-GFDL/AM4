@@ -30,12 +30,13 @@ and updating the source to ensure all source.  To obtain all source,
 use the following git command
 
 ```
-git clone -r https://github.com/NOAA-GFDL/AM4.git
+git clone --recursive https://github.com/NOAA-GFDL/AM4.git
 ```
 
-The `-r` option to `git clone` instructs git to recursively clone all
-submodules.  In the event the repository was not cloned using the `-r`
-recursive option, the following step must be taken to obtain all sources:
+The `--recursive` option to `git clone` instructs git to recursively
+clone all submodules.  In the event the repository was not cloned
+using the `--recursive` option, the following step must be taken to
+obtain all sources:
 
 ```
 # From within the AM4 parent directory
@@ -46,15 +47,19 @@ git submodule update --init --recursive
 
 All model source is contained in the [src](src) directory.  GFDL
 tracks code using the git version control system.  This package
-includes a single version of the following GFDL model components:
+includes a single version of the following GFDL model components.  The
+git hash listed corresponds to the commit hash in the internal GFDL
+git repository.
 
-* atmos_cubed_sphere
-* atmos_drivers
-* atmos_param
-* atmos_shared
-* ice_param
-* ice_sis
-* land_lad2
+Component | Commit Hash
+--------- | -----------
+atmos_cubed_sphere | b8b05bf650c0d3293b538bdaceb894ba0fd6910b
+atmos_drivers | 5ee95d6abf0879594551dd7e6635dff4004c4010
+atmos_param | 2e94acfd8621e85216bf822c395a8c3f15a511a5
+atmos_shared | a557d4d7bab033ef1ad1d400a62fe07a97ccb477
+ice_param | 1553c8bc4f9a66791c89367b6f327147523155ed
+ice_sis | ccc7328dcd79706dd5c17c8bab660222886fc80b
+land_lad2 | a220288ecb289bf9d793d051fc5076072874ce07
 
 The following components are available in the
 [NOAA-GFDL](https://github.com/NOAA-GFDL) github organization:
