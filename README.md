@@ -84,7 +84,7 @@ additional settings that can be modified during the build.
 
 The input data required for running the AM4 model can be found on
 [GFDL's data
-portal](http://http://data1.gfdl.noaa.gov/nomads/forms/am4.0/).
+portal](http://data1.gfdl.noaa.gov/nomads/forms/am4.0/) .
 
 The file `AM4.tar.gz` contains a configured run directory to run a
 sample experiment of the AM4 model.  Included in the tar file is a
