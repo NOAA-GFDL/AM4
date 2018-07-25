@@ -80,11 +80,11 @@ the Intel compilers, the netCDF 4 library and the MPICH2 MPI library.
 Included in the [intel.mk](exec/templates/intel.mk) file are
 additional settings that can be modified during the build.
 
-## Obtaining the Input data
+## [obtaining the input data]
 
 The input data required for running the AM4 model can be found on
 [GFDL's data
-portal](ftp://nomads.gfdl.noaa.gov/users/Ming.Zhao/AM4Documentation/GFDL-AM4.0/).
+portal](http://http://data1.gfdl.noaa.gov/nomads/forms/am4.0/).
 
 The file `AM4.tar.gz` contains a configured run directory to run a
 sample experiment of the AM4 model.  Included in the tar file is a
@@ -95,7 +95,7 @@ directory.
 
 Included in the run directory is a sample run script for reference.
 To run the AM4 sample experiment, first download the data file
-mentioned in [Obtaining the Input data](obtaining-the-input-data)
+mentioned in [Obtaining the Input data](#obtaining-the-input-data)
 section.  Modify the variables in the configuration section in the
 sample run script, and then run the script.
 
