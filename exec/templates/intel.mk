@@ -106,8 +106,8 @@ endif
 FFLAGS := -fno-alias -stack_temps -safe_cray_ptr -ftz -assume byterecl -i4 -r8 -nowarn -g -sox -traceback
 
 # Flags based on perforance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
-FFLAGS_PROD = -O2
-FFLAGS_REPRO = -fpmodel source -O2
+FFLAGS_PROD = -fp-model source -O3
+FFLAGS_REPRO = -fp-model source -O2
 FFLAGS_DEBUG = -O0 -check -check noarg_temp_created -check nopointer -warn -warn noerrors -debug variable_locations -fpe0 -ftrapuv
 
 # Flags to add additional build options
@@ -200,7 +200,7 @@ CFLAGS += $(ISA)
 FFLAGS += $(ISA)
 endif
 
-ifdef NO_OVERRIDE_LIMITS
+ifndef NO_OVERRIDE_LIMITS
 FFLAGS += $(FFLAGS_OVERRIDE_LIMITS)
 endif
 

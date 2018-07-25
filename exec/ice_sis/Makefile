@@ -1,6 +1,6 @@
 # Makefile created by mkmf 19.3.0
 
-CPPDEFS = -DINTERNAL_FILE_NML -Duse_netCDF
+CPPDEFS = -DINTERNAL_FILE_NML
 
 OTHERFLAGS = -I$(BUILDROOT)mom6 -I$(BUILDROOT)fms
 

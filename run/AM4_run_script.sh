@@ -31,7 +31,7 @@ executable=/path/to/executable/fms_cm4p12_warsaw.x
 ## Run parameters
 #total_npes is the number of cores to run on, omp_threads is the number of 
 # openMP threads
-total_npes=432
+total_npes=216
 omp_threads=1
 
 # End of configuration section

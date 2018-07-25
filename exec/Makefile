@@ -35,7 +35,7 @@ land_lad2/libland_lad2.a: fms/libfms.a FORCE
 
 # MOM6 is currently unable to run with OpenMP enabled
 mom6/libmom6.a: fms/libfms.a FORCE
-	$(MAKE) $(SUBMAKEFLAGS) OPENMP="" --directory=$(BUILDROOT)mom6 $(@F)
+	$(MAKE) $(SUBMAKEFLAGS) --directory=$(BUILDROOT)mom6 $(@F)
 
 coupler/libcoupler.a: atmos_dyn/libatmos_dyn.a ice_sis/libice_sis.a atmos_phys/libatmos_phys.a mom6/libmom6.a land_lad2/libland_lad2.a fms/libfms.a FORCE
 	$(MAKE) $(SUBMAKEFLAGS) OPENMP=$(OPENMP) --directory=$(BUILDROOT)coupler $(@F)

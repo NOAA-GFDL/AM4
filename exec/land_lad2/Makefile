@@ -228,6 +228,7 @@ OBJ = uptake.o vegn_dynamics.o vegn_radiation.o land_model.o nfu.o sphum.o land_
 
 clean: neat
 	$(RM) $(OBJ) libland_lad2.a
+	$(RM) *.DO_NOT_MODIFY.f90
 	$(RM) *.mod
 
 neat:
