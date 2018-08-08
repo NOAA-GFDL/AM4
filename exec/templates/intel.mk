@@ -5,10 +5,10 @@
 
 ############
 # Command Macros
-FC = ifort
-CC = icc
-CXX = icpc
-LD = ifort
+FC = mpiifort
+CC = mpiicc
+CXX = mpiicpc
+LD = mpiifort
 
 #######################
 # Build target macros
@@ -172,6 +172,18 @@ ifndef MPI_LIBS
 LIBS += $(shell pkg-config --libs mpich2-f90)
 else
 LIBS += $(MPI_LIBS)
+endif
+# HDF library flags
+ifndef HDF_LIBS
+LIBS += -lhdf5 -lhdf5_fortran -lhdf5_hl -lhdf5hl_fortran
+else
+LIBS += $(HDF_LIBS)
+endif
+# MKL library flags
+ifndef MKL_LIBS
+LIBS += -lmkl_blas95_lp64 -lmkl_lapack95_lp64 -lmkl_intel_lp64 -lmkl_core -lmkl_sequential
+else
+LIBS += $(MKL_LIBS)
 endif
 
 # Get compile flags based on target macros.
