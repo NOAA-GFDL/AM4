@@ -92,8 +92,11 @@ options to add to the make command.  For example
 make ISA=-xhost BLD_TYPE=REPRO
 ```
 will replace -msse with -xhost and -O3 with -O2.  The three options for 
-`BLD_TYPE` are `PROD` (-O3), `REPRO` (-O2), and `DEBUG` (-O0 and other 
-traps).  All of the make line options can be
+`BLD_TYPE` are  
+`PROD` (-O3)  
+`REPRO` (-O2)    
+`DEBUG` (-O0 and other traps)  
+All of the make line options can be
 found in the [intel.mk](exec/templates/intel.mk) file.
 
 ## Obtaining the input data
