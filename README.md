@@ -78,7 +78,23 @@ Intel compilers ([intel.mk](exec/templates/intel.mk)).  This make
 template can be used on any system with a relatively recent version of
 the Intel compilers, the netCDF 4 library and the MPICH2 MPI library.
 Included in the [intel.mk](exec/templates/intel.mk) file are
-additional settings that can be modified during the build.
+additional settings that can be modified during the build.  
+
+
+To run the default build (-O3 -msse2), go to the exec directory and
+enter the command
+```
+make
+```
+If you would like to change some of the compiler options, there are several different
+options to add to the make command.  For example
+```
+make ISA=-xhost BLD_TYPE=REPRO
+```
+will replace -msse with -xhost and -O3 with -O2.  The three options for 
+`BLD_TYPE` are `PROD` (-O3), `REPRO` (-O2), and `DEBUG` (-O0 and other 
+traps).  All of the make line options can be
+found in the [intel.mk](exec/templates/intel.mk) file.
 
 ## Obtaining the input data
 
