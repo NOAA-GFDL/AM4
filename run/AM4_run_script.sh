@@ -14,7 +14,7 @@ mpiexec_nopt=-n
 # Option used to specify number of OpenMP threads to run
 mpiexec_topt=-d
 
-# Where to perform the run 
+# Where to perform the run
 # If using AM4.tar, this should be AM4_run
 workDir=/path/to/run/dir
 
@@ -29,10 +29,10 @@ executable=/path/to/executable/fms_cm4p12_warsaw.x
 
 
 ## Run parameters
-#total_npes is the number of cores to run on, omp_threads is the number of 
+#total_npes is the number of cores to run on, omp_threads is the number of
 # openMP threads
-total_npes=216
-omp_threads=1
+total_npes=432
+omp_threads=2
 
 # End of configuration section
 # ***********************************************************************
@@ -113,7 +113,7 @@ then
 fi
 
 ## Use this section if you are untar'ing the input data ##
-## Not required if sing AM4.tar out of the box          ## 
+## Not required if using AM4.tar out of the box          ##
 ## Extract the input data
 #tar xf ${inputDataTar}
 #if [ $? -ne 0 ]
