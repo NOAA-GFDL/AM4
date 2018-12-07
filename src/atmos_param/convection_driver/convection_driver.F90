@@ -248,7 +248,7 @@ logical :: do_liq_num
 logical :: do_ice_num
 logical :: do_cosp
 integer :: do_clubb
-integer :: do_lsc
+logical :: do_lsc
 logical :: do_mca 
 logical :: do_ras 
 logical :: do_uw_conv

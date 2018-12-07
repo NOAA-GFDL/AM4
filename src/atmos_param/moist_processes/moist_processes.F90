@@ -227,18 +227,27 @@ real :: missing_value = -999.
 ! cmip names, long_names, standard names for wetdep diag fields
 integer :: id_wetpoa_cmip, id_wetsoa_cmip, id_wetbc_cmip, id_wetdust_cmip, &
            id_wetss_cmip, id_wetso4_cmip, id_wetso2_cmip, id_wetdms_cmip, id_wetnh4_cmip
-character(len=8), dimension(9) :: cmip_names = (/"poa","soa","bc","dust","ss","so4","so2","dms","nh4"/)
+character(len=8), dimension(9) :: cmip_names = (/"poa ","soa ","bc  ","dust","ss  ","so4 ","so2 ","dms ","nh4 "/)
 character(len=64), dimension(9) :: cmip_longnames = &
-                                  (/"Dry Aerosol Primary Organic Matter", &
+                                  (/"Dry Aerosol Primary Organic Matter  ", &
                                     "Dry Aerosol Secondary Organic Matter", &
-                                    "Black Carbon Aerosol Mass", &
-                                    "Dust", "Seasalt", "SO4", "SO2", "DMS", "NH4+NH3"/)
+                                    "Black Carbon Aerosol Mass           ", &
+                                    "Dust                                ", &
+                                    "Seasalt                             ", &
+                                    "SO4                                 ", &
+                                    "SO2                                 ", &
+                                    "DMS                                 ", &
+                                    "NH4+NH3                             "/)
 character(len=64), dimension(9) :: cmip_stdnames = &
-                                  (/"primary_particulate_organic_matter_dry_aerosol", &
+                                  (/"primary_particulate_organic_matter_dry_aerosol  ", &
                                     "secondary_particulate_organic_matter_dry_aerosol", &
-                                    "elemental_carbon_dry_aerosol", "dust_dry_aerosol", &
-                                    "seasalt_dry_aerosol", "sulfate_dry_aerosol", &
-                                    "sulfur_dioxide", "dimethyl_sulfide", "ammonium_dry_aerosol"/)
+                                    "elemental_carbon_dry_aerosol                    ", &
+                                    "dust_dry_aerosol                                ", &
+                                    "seasalt_dry_aerosol                             ", &
+                                    "sulfate_dry_aerosol                             ", &
+                                    "sulfur_dioxide                                  ", &
+                                    "dimethyl_sulfide                                ", &
+                                    "ammonium_dry_aerosol                            "/)
 
 !-------------------- individual scheme tracers ------------------------
 
