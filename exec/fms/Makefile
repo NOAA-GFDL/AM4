@@ -2,6 +2,8 @@
 
 CPPDEFS = -DINTERNAL_FILE_NML -Duse_libMPI -Duse_netCDF
 
+TMPFILES = *genmod.f90
+
 include $(MK_TEMPLATE)
 
 
