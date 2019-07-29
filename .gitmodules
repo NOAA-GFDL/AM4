@@ -7,3 +7,6 @@
 [submodule "src/shared"]
 	path = src/shared
 	url = https://github.com/NOAA-GFDL/FMS.git
+[submodule "src/atmos_cubed_sphere"]
+	path = src/atmos_cubed_sphere
+	url = https://github.com/NOAA-GFDL/GFDL_atmos_cubed_sphere.git

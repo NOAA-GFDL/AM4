@@ -53,7 +53,6 @@ git repository.
 
 Component | Commit Hash
 --------- | -----------
-atmos_cubed_sphere | b8b05bf650c0d3293b538bdaceb894ba0fd6910b
 atmos_drivers | 5ee95d6abf0879594551dd7e6635dff4004c4010
 atmos_param | 2e94acfd8621e85216bf822c395a8c3f15a511a5
 atmos_shared | a557d4d7bab033ef1ad1d400a62fe07a97ccb477
@@ -67,6 +66,7 @@ The following components are available in the
 * [MOM6](https://github.com/NOAA-GFDL/MOM6)
 * [coupler](https://github.com/NOAA-GFDL/coupler)
 * [FMS](https://github.com/NOAA-GFDL/FMS) (as [shared](src/shared))
+* [GFDL_atmos_cubed_sphere (tag AM4.0)](https://github.com/NOAA-GFDL/GFDL_atmos_cubed_sphere) (as [atmos_cubed_sphere](src/atmos_cubed_sphere))
 
 ## Building AM4
 
