@@ -9,7 +9,6 @@ FC = mpiifort
 CC = mpiicc
 CXX = mpiicpc
 LD = mpiifort
-
 #######################
 # Build target macros
 #
@@ -180,10 +179,13 @@ else
 LIBS += $(HDF_LIBS)
 endif
 # MKL library flags
-ifndef MKL_LIBS
-LIBS += -lmkl_blas95_lp64 -lmkl_lapack95_lp64 -lmkl_intel_lp64 -lmkl_core -lmkl_sequential
+ifeq ($(MKL_LIBS),none)
 else
-LIBS += $(MKL_LIBS)
+ ifndef MKL_LIBS
+ LIBS += -lmkl_blas95_lp64 -lmkl_lapack95_lp64 -lmkl_intel_lp64 -lmkl_core -lmkl_sequential
+ else
+ LIBS += $(MKL_LIBS)
+ endif
 endif
 
 # Get compile flags based on target macros.
