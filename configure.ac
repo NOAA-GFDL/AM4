@@ -88,7 +88,6 @@ AC_CONFIG_FILES([Makefile
         analysis/bw/bw_atmos_zm_atl_pac_a1r/fre-analysis/bw_atmos_zm_atl_pac/ncl/Makefile
         src/Makefile
         src/ice_param/Makefile
-        src/coupler/Makefile
         src/land_lad2/Makefile
         src/land_lad2/transitions/Makefile
         src/land_lad2/canopy_air/Makefile
@@ -114,7 +113,6 @@ AC_CONFIG_FILES([Makefile
         src/atmos_shared/tracer_driver/tropchem/Makefile
         src/atmos_shared/tracer_driver/tropchem/AM3/Makefile
         src/atmos_shared/tracer_driver/tropchem/AM4/Makefile
-        src/MOM6/Makefile
         src/atmos_param/Makefile
         src/atmos_param/dry_adj/Makefile
         src/atmos_param/grey_radiation/Makefile
@@ -179,8 +177,6 @@ AC_CONFIG_FILES([Makefile
         src/atmos_param/clubb/Makefile
         src/atmos_param/clubb/CLUBB_core/Makefile
         src/atmos_param/my25_turb/Makefile
-        src/atmos_cubed_sphere/Makefile
-        src/shared/Makefile
         src/ice_sis/Makefile
         src/atmos_drivers/Makefile
         src/atmos_drivers/solo/Makefile
