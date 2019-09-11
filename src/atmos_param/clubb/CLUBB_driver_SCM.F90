@@ -735,7 +735,7 @@ contains
   endif
 
   if ( nqni > 0 ) then
-    if (do_ice_nucl_wpdf == .false.)  &
+    if (do_ice_nucl_wpdf .eqv. .false.)  &
       call error_mesg ('clubb_driver_mod', 'nqni > 0, but do_ice_nucl_wpdf is false', FATAL)
     Icedrop_act_clubb        = 0.0
     Ncrystal_max             = 0.0

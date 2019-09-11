@@ -182,17 +182,21 @@ integer                  :: id_loadso4, id_sconcso4, id_loadsoa, id_sconcsoa, &
 integer, dimension(6) :: cmip_family_mapping
 integer, dimension(6) :: id_cmipload, id_cmipsconc
 type(cmip_diag_id_type), dimension(6) :: ID_cmipconc
-character(len=8), dimension(6) :: cmip_names = (/"oa","poa","soa","bc","dust","ss"/)
+character(len=8), dimension(6) :: cmip_names = (/"oa  ","poa ","soa ","bc  ","dust","ss  "/)
 character(len=64), dimension(6) :: cmip_longnames = &
-                                  (/"Dry Aerosol Organic Matter", &
-                                    "Dry Aerosol Primary Organic Matter", &
+                                  (/"Dry Aerosol Organic Matter          ", &
+                                    "Dry Aerosol Primary Organic Matter  ", &
                                     "Dry Aerosol Secondary Organic Matter", &
-                                    "Black Carbon Aerosol", "Dust", "Seasalt"/)
+                                    "Black Carbon Aerosol                ", &
+                                    "Dust                                ", &
+                                    "Seasalt                             "/)
 character(len=64), dimension(6) :: cmip_stdnames = &
-                                  (/"particulate_organic_matter", &
-                                    "primary_particulate_organic_matter", &
+                                  (/"particulate_organic_matter          ", &
+                                    "primary_particulate_organic_matter  ", &
                                     "secondary_particulate_organic_matter", &
-                                    "black_carbon", "dust", "seasalt"/)
+                                    "black_carbon                        ", &
+                                    "dust                                ", &
+                                    "seasalt                             "/)
 
 !---------------------------------------------------------------------
 !    miscellaneous variables
