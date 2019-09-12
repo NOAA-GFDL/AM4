@@ -4,10 +4,12 @@
 # Ed Hartnett 2019-07-30
 
 # Run make targets in each of these subdirs
-SUBDIRS = transitions canopy_air glacier vegetation soil snow topo_rough river lake shared predefined_tiles land_tracers
+SUBDIRS = transitions canopy_air glacier . vegetation soil snow	\
+topo_rough river lake shared predefined_tiles land_tracers
 
 # Build these uninstalled convenience libraries.
-noinst_LTLIBRARIES = libland_tile.la libland_constants.la libland_model.la libland_data.la
+noinst_LTLIBRARIES = libland_tile.la libland_constants.la	\
+libland_model.la libland_data.la
 
 # Each convenience library depends on its source.
 libland_tile_la_SOURCES = land_tile.F90

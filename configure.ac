@@ -48,17 +48,24 @@ dnl # Check for netCDF C library.
 dnl AC_SEARCH_LIBS([nc_create], [netcdf], [],
 dnl                             [AC_MSG_ERROR([Can't find or link to the netcdf C library, set CPPFLAGS/LDFLAGS.])])
 
-# Check for netCDF Fortran library.
+# Tell autoconf that language tests are in fortran.
 AC_LANG_PUSH(Fortran)
+
+# Check for netCDF Fortran library.
 AC_SEARCH_LIBS([nf_create], [netcdff], [],
                             [AC_MSG_ERROR([Can't find or link to the netcdf Fortran library, set CPPFLAGS/LDFLAGS.])])
+
+# Done testing Fortran compiler.
 AC_LANG_POP(Fortran)
+
+# Test that extra-long lines of Fortran long are compiled OK.
+GFDL_CHECK_FORTRAN_LONG_LINES()
 
 # Require netCDF.
 #AC_CHECK_FUNC([nf_open], [], [AC_MSG_ERROR([NetCDF Fortran library required])])
 
 # These defines are required for the build.
-#AC_DEFINE([use_netCDF], [1])
+AC_DEFINE([INTERNAL_FILE_NML], [1])
 #AC_DEFINE([use_libMPI], [1])
 #AC_DEFINE([SPMD], [1])
 

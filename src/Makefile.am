@@ -3,6 +3,7 @@
 #
 # Ed Hartnett 2019-07-30
 
-# Run make targets in each of these subdirs
+# Run make targets in each of these subdirs.
 # coupler MOM6 atmos_cubed_sphere shared
-SUBDIRS = ice_param  land_lad2 atmos_shared atmos_param ice_sis atmos_drivers
+SUBDIRS = ice_param land_lad2 atmos_shared atmos_param ice_sis	\
+atmos_drivers
