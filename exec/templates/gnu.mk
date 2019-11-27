@@ -39,12 +39,17 @@ endif
 # variables.  If these options are not defined, the makefile will
 # attempt to get the correct options from the `nf-config` command.
 
+# HDF_FLAGS
+# HDF_LDFLAGS
+# HDF_LIBS
+# If defined, use the HDF5 compile and link options defined in these
+# variables.  If these options are note defined, then makefile will 
+# attempt ot get the correct options from the `h5fc -show` command.
+
 # MPI_FLAGS
 # MPI_LIBS
 # If defined, use the MPI compile and link options defined in these
-# variables.  If these options are not defined, the makefile will
-# attempt to get the correct options from the `pkg-config` for mpich2
-# MPI library.
+# variables.  
 
 # VERBOSE
 # If non-blank, add additional verbosity compiler options
@@ -96,9 +101,7 @@ else
 FPPFLAGS += $(NETCDF_FLAGS)
 endif
 # Fortran Compiler flags for the MPICH MPI library
-ifndef MPI_FLAGS
-FPPFLAGS += $(shell pkg-config --cflags-only-I mpich2-c)
-else
+ifdef MPI_FLAGS
 FPPFLAGS += $(MPI_FLAGS)
 endif
 
@@ -125,10 +128,8 @@ else
 CPPFLAGS += $(NETCDF_FLAGS)
 endif
 # C Compiler flags for the MPICH MPI library
-ifndef MPI_FLAGS
+ifdef MPI_FLAGS
 CPPFLAGS += $(shell pkg-config --cflags-only-I mpich2-c)
-else
-CPPFLAGS += $(MPI_FLAGS)
 endif
 
 # Base set of C compiler flags
@@ -159,6 +160,19 @@ LDFLAGS_OPENMP := -fopenmp
 LDFLAGS_VERBOSE :=
 LDFLAGS_COVERAGE :=
 
+# HDF flags
+ifndef HDF5_FFLAGS
+FFLAGS += $(shell myflags=''; for c in $$(h5fc -show); do if [ x"$$(echo $$c | cut -c1-2)" = "x-I" ]; then myflags="$${myflags} $$c"; fi; done; echo $${myflags})
+else
+FFLAGS += $(HDF5_FFLAGS)
+endif
+
+# ifndef HDF5_LDFLAGS
+LDFLAGS += $(shell myflags=''; for c in $$(h5fc -show); do if [ x"$$(echo $$c | cut -c1-2)" = "x-L" ]; then myflags="$${myflags} $$c"; fi; done; echo $${myflags})
+else
+LDFLAGS += $(HDF5_LDFLAGS)
+endif
+
 # Start with a blank LIBS
 LIBS =
 # NetCDF library flags
@@ -167,10 +181,8 @@ LIBS += $(shell nf-config --flibs)
 else
 LIBS += $(NETCDF_LIBS)
 endif
-# MPICH MPI library flags
-ifndef MPI_LIBS
-LIBS += $(shell pkg-config --libs mpich2-f90)
-else
+# MPI library flags
+ifdef MPI_LIBS
 LIBS += $(MPI_LIBS)
 endif
 # HDF library flags
