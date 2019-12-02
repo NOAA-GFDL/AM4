@@ -19,7 +19,7 @@ The layout of this package includes the following directories:
 * src - The source code for the AM4 model
 * exec - The build directory with Makefiles for building the model executable
 * run - Sample run script
-* analysis - Sample analysis scripts 
+* analysis - Sample analysis scripts
 
 ## Cloning Instructions
 
@@ -91,7 +91,7 @@ options to add to the make command.  For example
 ```
 make ISA=-xhost BLD_TYPE=REPRO
 ```
-will replace -msse with -xhost and -O3 with -O2.  The three options for 
+will replace -msse with -xhost and -O3 with -O2.  The three options for
 `BLD_TYPE` are  
 `PROD` (-O3)  
 `REPRO` (-O2)    
@@ -109,6 +109,30 @@ The file `AM4.tar.gz` contains a configured run directory to run a
 sample experiment of the AM4 model.  Included in the tar file is a
 README.AM4_run with more instructions on how to configure the AM4 run
 directory.
+
+On Linux systems, the `wget` command is usually sufficient to download the data
+file:
+
+```
+wget ftp://nomads.gfdl.noaa.gov/users/Ming.Zhao/AM4Documentation/GFDL-AM4.0/inputData/AM4_run.tar.gz
+```
+
+To ensure the file downloaded is complete and not corrupted, download one of the two files:
+
+```
+wget ftp://nomads.gfdl.noaa.gov/users/Ming.Zhao/AM4Documentation/GFDL-AM4.0/inputData/AM4_run.tar.gz.sha256
+wget ftp://nomads.gfdl.noaa.gov/users/Ming.Zhao/AM4Documentation/GFDL-AM4.0/inputData/AM4_run.tar.gz.sig
+```
+
+and run the following command that corresponds to the signature file downloaded:
+
+```
+sha256sum -c AM4_run.tar.gz.sha256
+```
+
+```
+gpg --verify AM4_run.tar.gz.sig
+```
 
 ## Running AM4
 
@@ -128,7 +152,7 @@ Fortran namelists and namelist variables that modify, at run time, the
 model.  To learn more about the settings in the `input.nml` file,
 please refer to source code where the namelist/variable are defined.
 
-## Analysis Scripts 
+## Analysis Scripts
 
 Some of the climate analysis scripts run at NOAA GFDL and used in the
 AM4 documentation papers are located in the analysis directory.
@@ -140,7 +164,7 @@ all dependencies are installed.
 E.g.
 
 * [Radiation processor](analysis/cjs1/radiation_atmos_av_mon/radiation_atmos_av_mon.ipynb)
-* [Long-term DJF seasonal mean](analysis/bw/bw_atmos_cru_ts_a1r/bw_atmos_monthly_cru_ts.1980-2014.ipynb) 
+* [Long-term DJF seasonal mean](analysis/bw/bw_atmos_cru_ts_a1r/bw_atmos_monthly_cru_ts.1980-2014.ipynb)
 * [Zonal_mean_zonal_wind_stress](analysis/bw/bw_atmos_zm_atl_pac_a1r/bw_atmos_atl_pac.1980-2014.ipynb)
 * [PCMDI Metrics Portrait Plot](analysis/pcmdimetrics/portraitPlot-AM4.AMIP.ipynb)
 
