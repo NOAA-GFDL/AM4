@@ -71,7 +71,7 @@ endif
 # The Intel Instruction Set Archetecture (ISA) compile options to use.
 # If blank, than use the default ISA settings for the host.
 ifndef ISA
-ISA = -msse2
+ISA = -xsse2
 endif
 
 # COVERAGE
