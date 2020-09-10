@@ -16,7 +16,8 @@ module ice_type_mod
   use diag_manager_mod, only: diag_axis_init, register_diag_field, &
                               register_static_field, send_data
   use time_manager_mod, only: time_type, get_time
-  use coupler_types_mod,only: coupler_2d_bc_type, coupler_3d_bc_type
+  use coupler_types_mod,only: coupler_1d_bc_type, coupler_2d_bc_type, coupler_3d_bc_type
+  use coupler_types_mod,only: coupler_type_spawn
   use constants_mod,    only: Tfreeze, radius, pi
   use ice_grid_mod,     only: set_ice_grid, t_to_uv, ice_grid_end
   use ice_grid_mod,     only: Domain, isc, iec, jsc, jec, isd, ied, jsd, jed, im, jm, km
@@ -236,10 +237,14 @@ public  :: iceClocka,iceClockb,iceClockc
      real,    pointer, dimension(:,:  ) :: p_surf              =>NULL()
      real,    pointer, dimension(:,:  ) :: runoff              =>NULL()
      real,    pointer, dimension(:,:  ) :: calving             =>NULL()
+     real,    pointer, dimension(:,:  ) :: stress_mag          =>NULL()
+     real,    pointer, dimension(:,:  ) :: ustar_berg          =>NULL()
+     real,    pointer, dimension(:,:  ) :: area_berg           =>NULL()
+     real,    pointer, dimension(:,:  ) :: mass_berg           =>NULL()
      real,    pointer, dimension(:,:  ) :: runoff_hflx         =>NULL()
      real,    pointer, dimension(:,:  ) :: calving_hflx        =>NULL()
      real,    pointer, dimension(:,:  ) :: flux_salt           =>NULL()
-     real,    pointer, dimension(:,:)   :: lwdn                =>NULL()
+     real,    pointer, dimension(:,:  ) :: lwdn                =>NULL()
      real,    pointer, dimension(:,:  ) :: swdn                =>NULL() ! downward long/shortwave
      real,    pointer, dimension(:,:,:) :: pen                 =>NULL()
      real,    pointer, dimension(:,:,:) :: trn                 =>NULL() ! ice optical parameters
@@ -262,8 +267,8 @@ public  :: iceClocka,iceClockb,iceClockc
      real,    pointer, dimension(:,:)   :: vmask               =>NULL() ! where ice vels can be non-zero
      real,    pointer, dimension(:,:)   :: mi                  =>NULL() ! This is needed for the wave model. It is introduced here,
                                                                         ! because flux_ice_to_ocean cannot handle 3D fields. This may be
-									! removed, if the information on ice thickness can be derived from 
-									! eventually from h_ice outside the ice module.
+                                                                        ! removed, if the information on ice thickness can be derived from 
+                                                                        ! eventually from h_ice outside the ice module.
      logical, pointer, dimension(:,:)   :: maskmap             =>NULL() ! A pointer to an array indicating which
                                                                         ! logical processors are actually used for
                                                                         ! the ocean code. The other logical
@@ -354,17 +359,29 @@ public  :: iceClocka,iceClockb,iceClockc
   !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
   ! ice_model_init - initializes ice model data, parameters and diagnostics      !
   !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
-  subroutine ice_model_init (Ice, Time_Init, Time, Time_step_fast, Time_step_slow, Verona_coupler )
+  subroutine ice_model_init (Ice, Time_Init, Time, Time_step_fast, Time_step_slow, &
+                             Verona_coupler, Concurrent_ice, gas_fluxes, gas_fields_ocn )
 
     type (ice_data_type), intent(inout) :: Ice
     type (time_type)    , intent(in)    :: Time_Init      ! starting time of model integration
     type (time_type)    , intent(in)    :: Time           ! current time
     type (time_type)    , intent(in)    :: Time_step_fast ! time step for the ice_model_fast
     type (time_type)    , intent(in)    :: Time_step_slow ! time step for the ice_model_slow
-    logical,    optional, intent(in)    :: Verona_coupler ! This optional argument has been added
-                                                          ! for compatibility with SIS2. For SIS1
+    logical,    optional, intent(in)    :: Verona_coupler ! These optional arguments have been added
+    logical,    optional, intent(in)    :: Concurrent_ice ! for compatibility with SIS2. For SIS1
                                                           ! there is no difference between fast and
                                                           ! slow ice PEs.
+  type(coupler_1d_bc_type), &
+                optional, intent(in)    :: gas_fluxes     ! If present, this type describes the
+                                              ! additional gas or other tracer fluxes between the
+                                              ! ocean, ice, and atmosphere, and can be used to
+                                              ! spawn related internal variables in the ice model.
+  type(coupler_1d_bc_type), &
+                 optional, intent(in)   :: gas_fields_ocn  ! If present, this type describes the
+                                              ! ocean and surface-ice fields that will participate
+                                              ! in the calculation of additional gas or other
+                                              ! tracer fluxes, and can be used to spawn related
+                                              ! internal variables in the ice model.
 
     integer           :: io, ierr, nlon, nlat, npart, unit, log_unit, k
     integer           :: sc, dy, i, j
@@ -544,6 +561,16 @@ public  :: iceClocka,iceClockb,iceClockc
     Ice % pen             =0.
     Ice % trn             =0.
     Ice % bheat           =0.
+
+    if (present(gas_fluxes)) then
+      call coupler_type_spawn(gas_fluxes, Ice%ocean_fluxes, (/isc,isc,iec,iec/), &
+                              (/jsc,jsc,jec,jec/),  suffix = '_ice')
+      call coupler_type_spawn(gas_fluxes, Ice%ocean_fluxes_top, (/isc,isc,iec,iec/), &
+                              (/jsc,jsc,jec,jec/), (/1, km/), suffix = '_ice_top')
+    endif
+    if (present(gas_fields_ocn)) &
+      call coupler_type_spawn(gas_fields_ocn, Ice%ocean_fields, (/isc,isc,iec,iec/), &
+                              (/jsc,jsc,jec,jec/), (/1, km/), suffix = '_ice')
 
 
     do j = jsc, jec
