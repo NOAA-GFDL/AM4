@@ -18,7 +18,7 @@ canopy_air.o: $(SRCROOT)land_lad2/canopy_air/canopy_air.F90 $(SRCROOT)land_lad2/
 	$(FC) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c -o $@ 	$(preproc)
 glac_tile.o: $(SRCROOT)land_lad2/glacier/glac_tile.F90 $(SRCROOT)FMS/include/fms_platform.h $(SRCROOT)land_lad2/predefined_tiles/../shared/version_variable.inc land_constants.o land_io.o land_tile_diag_sel.o land_data.o tiling_input_types.o
 	$(eval preproc := $(addsuffix .DO_NOT_MODIFY.f90,$(basename $(notdir $<))))
-	cpp -nostdinc -C -v $(CPPDEFS) $(CPPFLAGS) $< > $(preproc) -I$(SRCROOT)FMS/include -I$(SRCROOT)land_lad2/predefined_tiles/../shared
+	cpp -nostdinc -C -v $(CPPDEFS) $(CPPFLAGS) $< > $(preproc) -I$(SRCROOT)shared/include -I$(SRCROOT)land_lad2/predefined_tiles/../shared
 	$(FC) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c -o $@ 	$(preproc)
 glacier.o: $(SRCROOT)land_lad2/glacier/glacier.F90 $(SRCROOT)land_lad2/predefined_tiles/../shared/version_variable.inc glac_tile.o land_tile.o land_tile_diag.o land_data.o land_tile_io.o land_debug.o
 	$(eval preproc := $(addsuffix .DO_NOT_MODIFY.f90,$(basename $(notdir $<))))
@@ -42,7 +42,7 @@ lake.o: $(SRCROOT)land_lad2/lake/lake.F90 $(SRCROOT)land_lad2/predefined_tiles/.
 	$(FC) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c -o $@ 	$(preproc)
 lake_tile.o: $(SRCROOT)land_lad2/lake/lake_tile.F90 $(SRCROOT)FMS/include/fms_platform.h $(SRCROOT)land_lad2/predefined_tiles/../shared/version_variable.inc land_constants.o land_data.o land_io.o land_tile_diag_sel.o tiling_input_types.o land_debug.o
 	$(eval preproc := $(addsuffix .DO_NOT_MODIFY.f90,$(basename $(notdir $<))))
-	cpp -nostdinc -C -v $(CPPDEFS) $(CPPFLAGS) $< > $(preproc) -I$(SRCROOT)FMS/include -I$(SRCROOT)land_lad2/predefined_tiles/../shared
+	cpp -nostdinc -C -v $(CPPDEFS) $(CPPFLAGS) $< > $(preproc) -I$(SRCROOT)shared/include -I$(SRCROOT)land_lad2/predefined_tiles/../shared
 	$(FC) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c -o $@ 	$(preproc)
 land_constants.o: $(SRCROOT)land_lad2/land_constants.F90
 	$(eval preproc := $(addsuffix .DO_NOT_MODIFY.f90,$(basename $(notdir $<))))
@@ -134,7 +134,7 @@ snow.o: $(SRCROOT)land_lad2/snow/snow.F90 $(SRCROOT)land_lad2/predefined_tiles/.
 	$(FC) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c -o $@ 	$(preproc)
 snow_tile.o: $(SRCROOT)land_lad2/snow/snow_tile.F90 $(SRCROOT)FMS/include/fms_platform.h $(SRCROOT)land_lad2/predefined_tiles/../shared/version_variable.inc land_constants.o land_tile_diag_sel.o land_data.o
 	$(eval preproc := $(addsuffix .DO_NOT_MODIFY.f90,$(basename $(notdir $<))))
-	cpp -nostdinc -C -v $(CPPDEFS) $(CPPFLAGS) $< > $(preproc) -I$(SRCROOT)FMS/include -I$(SRCROOT)land_lad2/predefined_tiles/../shared
+	cpp -nostdinc -C -v $(CPPDEFS) $(CPPFLAGS) $< > $(preproc) -I$(SRCROOT)shared/include -I$(SRCROOT)land_lad2/predefined_tiles/../shared
 	$(FC) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c -o $@ 	$(preproc)
 soil.o: $(SRCROOT)land_lad2/soil/soil.F90 $(SRCROOT)land_lad2/predefined_tiles/../shared/debug.inc $(SRCROOT)land_lad2/predefined_tiles/../shared/version_variable.inc land_constants.o soil_tile.o soil_carbon.o land_tile.o land_utils.o land_tile_diag.o land_data.o land_io.o land_tile_io.o vegn_data.o vegn_tile.o land_debug.o uptake.o hillslope.o hillslope_hydrology.o river.o land_numerics.o
 	$(eval preproc := $(addsuffix .DO_NOT_MODIFY.f90,$(basename $(notdir $<))))
@@ -146,7 +146,7 @@ soil_carbon.o: $(SRCROOT)land_lad2/soil/soil_carbon.F90 $(SRCROOT)land_lad2/pred
 	$(FC) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c -o $@ 	$(preproc)
 soil_tile.o: $(SRCROOT)land_lad2/soil/soil_tile.F90 $(SRCROOT)FMS/include/fms_platform.h $(SRCROOT)land_lad2/predefined_tiles/../shared/version_variable.inc land_constants.o land_tile_diag_sel.o soil_carbon.o land_data.o land_debug.o tiling_input_types.o
 	$(eval preproc := $(addsuffix .DO_NOT_MODIFY.f90,$(basename $(notdir $<))))
-	cpp -nostdinc -C -v $(CPPDEFS) $(CPPFLAGS) $< > $(preproc) -I$(SRCROOT)FMS/include -I$(SRCROOT)land_lad2/predefined_tiles/../shared
+	cpp -nostdinc -C -v $(CPPDEFS) $(CPPFLAGS) $< > $(preproc) -I$(SRCROOT)shared/include -I$(SRCROOT)land_lad2/predefined_tiles/../shared
 	$(FC) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c -o $@ 	$(preproc)
 sphum.o: $(SRCROOT)land_lad2/shared/sphum.F90 land_debug.o
 	$(eval preproc := $(addsuffix .DO_NOT_MODIFY.f90,$(basename $(notdir $<))))
@@ -170,7 +170,7 @@ topo_rough.o: $(SRCROOT)land_lad2/topo_rough/topo_rough.F90 $(SRCROOT)land_lad2/
 	$(FC) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c -o $@ 	$(preproc)
 transitions.o: $(SRCROOT)land_lad2/transitions/transitions.F90 $(SRCROOT)FMS/include/fms_platform.h $(SRCROOT)land_lad2/predefined_tiles/../shared/debug.inc $(SRCROOT)land_lad2/predefined_tiles/../shared/version_variable.inc nfu.o vegn_data.o cana_tile.o snow_tile.o vegn_tile.o soil_tile.o land_tile.o land_tile_diag.o land_tile_io.o land_data.o vegn_harvesting.o land_debug.o land_numerics.o
 	$(eval preproc := $(addsuffix .DO_NOT_MODIFY.f90,$(basename $(notdir $<))))
-	cpp -nostdinc -C -v $(CPPDEFS) $(CPPFLAGS) $< > $(preproc) -I$(SRCROOT)FMS/include -I$(SRCROOT)land_lad2/predefined_tiles/../shared
+	cpp -nostdinc -C -v $(CPPDEFS) $(CPPFLAGS) $< > $(preproc) -I$(SRCROOT)shared/include -I$(SRCROOT)land_lad2/predefined_tiles/../shared
 	$(FC) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c -o $@ 	$(preproc)
 uptake.o: $(SRCROOT)land_lad2/soil/uptake.F90 $(SRCROOT)land_lad2/predefined_tiles/../shared/debug.inc $(SRCROOT)land_lad2/predefined_tiles/../shared/version_variable.inc soil_tile.o land_debug.o land_data.o
 	$(eval preproc := $(addsuffix .DO_NOT_MODIFY.f90,$(basename $(notdir $<))))

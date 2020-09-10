@@ -10,6 +10,7 @@ include $(MK_TEMPLATE)
 .DEFAULT:
 	-echo $@ does not exist.
 all: libice_sis.a
+	exit 1
 ice_albedo.o: $(SRCROOT)ice_param/ice_albedo.F90
 	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	$(SRCROOT)ice_param/ice_albedo.F90
 ice_bergs.o: $(SRCROOT)ice_sis/ice_bergs.F90
