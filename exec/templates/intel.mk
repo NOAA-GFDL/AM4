@@ -71,7 +71,7 @@ endif
 # The Intel Instruction Set Archetecture (ISA) compile options to use.
 # If blank, than use the default ISA settings for the host.
 ifndef ISA
-ISA = -msse2
+ISA = -xsse2
 endif
 
 # COVERAGE
@@ -90,7 +90,7 @@ MAKEFLAGS += --jobs=$(shell grep '^processor' /proc/cpuinfo | wc -l)
 FPPFLAGS = -fpp -Wp,-w $(INCLUDES)
 # Fortran Compiler flags for the NetCDF library
 ifndef NETCDF_FLAGS
-FPPFLAGS += $(shell nf-config --fflags)
+FPPFLAGS += $(shell nf-config --fflags) 
 else
 FPPFLAGS += $(NETCDF_FLAGS)
 endif
@@ -100,7 +100,9 @@ FPPFLAGS += $(shell pkg-config --cflags-only-I mpich2-c)
 else
 FPPFLAGS += $(MPI_FLAGS)
 endif
-
+ifdef HDF_INCLUDE
+FPPFLAGS += $(HDF_INCLUDE)
+endif
 # Base set of Fortran compiler flags
 FFLAGS := -fno-alias -stack_temps -safe_cray_ptr -ftz -assume byterecl -i4 -r8 -nowarn -g -sox -traceback
 
@@ -163,6 +165,7 @@ LIBS =
 # NetCDF library flags
 ifndef NETCDF_LIBS
 LIBS += $(shell nf-config --flibs)
+LIBS += $(shell nc-config --libs)
 else
 LIBS += $(NETCDF_LIBS)
 endif
