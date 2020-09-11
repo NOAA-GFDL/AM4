@@ -165,6 +165,7 @@ LIBS =
 # NetCDF library flags
 ifndef NETCDF_LIBS
 LIBS += $(shell nf-config --flibs)
+LIBS += $(shell nc-config --libs)
 else
 LIBS += $(NETCDF_LIBS)
 endif
