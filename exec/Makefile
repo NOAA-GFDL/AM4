@@ -1,4 +1,4 @@
-# Makefile for Experiment 'cm4p12_warsaw'
+# Makefile for Experiment 'cm4p12_xanadu_2020.02_mg2'
 
 BUILDROOT = $(dir $(abspath $(firstword $(MAKEFILE_LIST))))
 SRCROOT = $(abspath $(BUILDROOT)../src)/ # Final '/' added to denote directory
@@ -15,7 +15,7 @@ include $(MK_TEMPLATE)
 
 SUBMAKEFLAGS = BUILDROOT=$(BUILDROOT) SRCROOT=$(SRCROOT) MK_TEMPLATE=$(MK_TEMPLATE) BLD_TYPE=$(BLD_TYPE)
 
-fms_cm4p12_warsaw.x: coupler/libcoupler.a ice_sis/libice_sis.a atmos_dyn/libatmos_dyn.a land_lad2/libland_lad2.a atmos_phys/libatmos_phys.a mom6/libmom6.a fms/libfms.a
+fms_cm4p12_xanadu_2020.02_mg2.x: coupler/libcoupler.a atmos_dyn/libatmos_dyn.a ice_sis/libice_sis.a atmos_cubed_sphere/libatmos_cubed_sphere.a atmos_phys/libatmos_phys.a mom6/libmom6.a land_lad2/libland_lad2.a fms/libfms.a
 	$(LD) $^ $(LDFLAGS) -o $@ $(STATIC_LIBS)
 
 fms/libfms.a:  FORCE
@@ -24,7 +24,10 @@ fms/libfms.a:  FORCE
 atmos_phys/libatmos_phys.a: fms/libfms.a FORCE
 	$(MAKE) $(SUBMAKEFLAGS) OPENMP=$(OPENMP) --directory=$(BUILDROOT)atmos_phys $(@F)
 
-atmos_dyn/libatmos_dyn.a: atmos_phys/libatmos_phys.a fms/libfms.a FORCE
+atmos_cubed_sphere/libatmos_cubed_sphere.a: atmos_phys/libatmos_phys.a fms/libfms.a FORCE
+	$(MAKE) $(SUBMAKEFLAGS) OPENMP=$(OPENMP) --directory=$(BUILDROOT)atmos_cubed_sphere $(@F)
+
+atmos_dyn/libatmos_dyn.a: atmos_cubed_sphere/libatmos_cubed_sphere.a atmos_phys/libatmos_phys.a fms/libfms.a FORCE
 	$(MAKE) $(SUBMAKEFLAGS) OPENMP=$(OPENMP) --directory=$(BUILDROOT)atmos_dyn $(@F)
 
 ice_sis/libice_sis.a: mom6/libmom6.a fms/libfms.a FORCE
@@ -37,7 +40,7 @@ land_lad2/libland_lad2.a: fms/libfms.a FORCE
 mom6/libmom6.a: fms/libfms.a FORCE
 	$(MAKE) $(SUBMAKEFLAGS) --directory=$(BUILDROOT)mom6 $(@F)
 
-coupler/libcoupler.a: atmos_dyn/libatmos_dyn.a ice_sis/libice_sis.a atmos_phys/libatmos_phys.a mom6/libmom6.a land_lad2/libland_lad2.a fms/libfms.a FORCE
+coupler/libcoupler.a: atmos_dyn/libatmos_dyn.a ice_sis/libice_sis.a mom6/libmom6.a land_lad2/libland_lad2.a atmos_phys/libatmos_phys.a fms/libfms.a FORCE
 	$(MAKE) $(SUBMAKEFLAGS) OPENMP=$(OPENMP) --directory=$(BUILDROOT)coupler $(@F)
 
 FORCE:

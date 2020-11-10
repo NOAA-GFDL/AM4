@@ -24,3 +24,12 @@
 	path = src/atmos_drivers
 	url = https://github.com/NOAA-GFDL/atmos_drivers.git
 	branch = master
+[submodule "src/GFDL_atmos_cubed_sphere"]
+	path = src/GFDL_atmos_cubed_sphere
+	url = https://github.com/NOAA-GFDL/GFDL_atmos_cubed_sphere.git
+[submodule "src/FMS"]
+	path = src/FMS
+	url = https://github.com/NOAA-GFDL/FMS.git
+[submodule "src/FMScoupler"]
+	path = src/FMScoupler
+	url = https://github.com/NOAA-GFDL/FMScoupler.git

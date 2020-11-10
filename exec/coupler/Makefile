@@ -10,32 +10,49 @@ include $(MK_TEMPLATE)
 .DEFAULT:
 	-echo $@ does not exist.
 all: libcoupler.a
-atmos_ocean_dep_fluxes_calc.o: $(SRCROOT)coupler/atmos_ocean_dep_fluxes_calc.f90 surface_flux.o
-	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c $(SRCROOT)coupler/atmos_ocean_dep_fluxes_calc.f90
-atmos_ocean_fluxes_calc.o: $(SRCROOT)coupler/atmos_ocean_fluxes_calc.f90 surface_flux.o
-	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c $(SRCROOT)coupler/atmos_ocean_fluxes_calc.f90
-atm_land_ice_flux_exchange.o: $(SRCROOT)coupler/atm_land_ice_flux_exchange.F90 surface_flux.o
-	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	$(SRCROOT)coupler/atm_land_ice_flux_exchange.F90
-coupler_main.o: $(SRCROOT)coupler/coupler_main.F90 flux_exchange.o
-	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	$(SRCROOT)coupler/coupler_main.F90
-flux_exchange.o: $(SRCROOT)coupler/flux_exchange.F90 atm_land_ice_flux_exchange.o land_ice_flux_exchange.o ice_ocean_flux_exchange.o
-	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	$(SRCROOT)coupler/flux_exchange.F90
-ice_ocean_flux_exchange.o: $(SRCROOT)coupler/ice_ocean_flux_exchange.F90
-	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	$(SRCROOT)coupler/ice_ocean_flux_exchange.F90
-land_ice_flux_exchange.o: $(SRCROOT)coupler/land_ice_flux_exchange.F90
-	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	$(SRCROOT)coupler/land_ice_flux_exchange.F90
-surface_flux.o: $(SRCROOT)coupler/surface_flux.F90
-	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	$(SRCROOT)coupler/surface_flux.F90
-
-SRC = $(SRCROOT)coupler/land_ice_flux_exchange.F90 $(SRCROOT)coupler/surface_flux.F90 $(SRCROOT)coupler/ice_ocean_flux_exchange.F90 $(SRCROOT)coupler/coupler_main.F90 $(SRCROOT)coupler/atm_land_ice_flux_exchange.F90 $(SRCROOT)coupler/flux_exchange.F90 $(SRCROOT)coupler/atmos_ocean_fluxes_calc.f90 $(SRCROOT)coupler/atmos_ocean_dep_fluxes_calc.f90
-OBJ = land_ice_flux_exchange.o surface_flux.o ice_ocean_flux_exchange.o coupler_main.o atm_land_ice_flux_exchange.o flux_exchange.o atmos_ocean_fluxes_calc.o atmos_ocean_dep_fluxes_calc.o
-
+atm_land_ice_flux_exchange.o: $(SRCROOT)FMScoupler/full/atm_land_ice_flux_exchange.F90 surface_flux.o atmos_ocean_fluxes_calc.o atmos_ocean_dep_fluxes_calc.o
+	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	$(SRCROOT)FMScoupler/full/atm_land_ice_flux_exchange.F90
+atmos_ocean_dep_fluxes_calc.o: $(SRCROOT)FMScoupler/full/atmos_ocean_dep_fluxes_calc.f90
+	$(FC) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	$(SRCROOT)FMScoupler/full/atmos_ocean_dep_fluxes_calc.f90
+atmos_ocean_fluxes_calc.o: $(SRCROOT)FMScoupler/full/atmos_ocean_fluxes_calc.f90
+	$(FC) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	$(SRCROOT)FMScoupler/full/atmos_ocean_fluxes_calc.f90
+coupler_main.o: $(SRCROOT)FMScoupler/full/coupler_main.F90 flux_exchange.o
+	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	$(SRCROOT)FMScoupler/full/coupler_main.F90
+flux_exchange.o: $(SRCROOT)FMScoupler/full/flux_exchange.F90 atmos_ocean_fluxes_calc.o atm_land_ice_flux_exchange.o land_ice_flux_exchange.o ice_ocean_flux_exchange.o
+	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	$(SRCROOT)FMScoupler/full/flux_exchange.F90
+ice_ocean_flux_exchange.o: $(SRCROOT)FMScoupler/full/ice_ocean_flux_exchange.F90
+	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	$(SRCROOT)FMScoupler/full/ice_ocean_flux_exchange.F90
+land_ice_flux_exchange.o: $(SRCROOT)FMScoupler/full/land_ice_flux_exchange.F90
+	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	$(SRCROOT)FMScoupler/full/land_ice_flux_exchange.F90
+surface_flux.o: $(SRCROOT)FMScoupler/shared/surface_flux.F90
+	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	$(SRCROOT)FMScoupler/shared/surface_flux.F90
+./flux_exchange.F90: $(SRCROOT)FMScoupler/full/flux_exchange.F90
+	cp $(SRCROOT)FMScoupler/full/flux_exchange.F90 .
+./coupler_main.F90: $(SRCROOT)FMScoupler/full/coupler_main.F90
+	cp $(SRCROOT)FMScoupler/full/coupler_main.F90 .
+./atmos_ocean_fluxes_calc.f90: $(SRCROOT)FMScoupler/full/atmos_ocean_fluxes_calc.f90
+	cp $(SRCROOT)FMScoupler/full/atmos_ocean_fluxes_calc.f90 .
+./atm_land_ice_flux_exchange.F90: $(SRCROOT)FMScoupler/full/atm_land_ice_flux_exchange.F90
+	cp $(SRCROOT)FMScoupler/full/atm_land_ice_flux_exchange.F90 .
+./land_ice_flux_exchange.F90: $(SRCROOT)FMScoupler/full/land_ice_flux_exchange.F90
+	cp $(SRCROOT)FMScoupler/full/land_ice_flux_exchange.F90 .
+./atmos_ocean_dep_fluxes_calc.f90: $(SRCROOT)FMScoupler/full/atmos_ocean_dep_fluxes_calc.f90
+	cp $(SRCROOT)FMScoupler/full/atmos_ocean_dep_fluxes_calc.f90 .
+./surface_flux.F90: $(SRCROOT)FMScoupler/shared/surface_flux.F90
+	cp $(SRCROOT)FMScoupler/shared/surface_flux.F90 .
+./ice_ocean_flux_exchange.F90: $(SRCROOT)FMScoupler/full/ice_ocean_flux_exchange.F90
+	cp $(SRCROOT)FMScoupler/full/ice_ocean_flux_exchange.F90 .
+SRC = $(SRCROOT)FMScoupler/full/ice_ocean_flux_exchange.F90 $(SRCROOT)FMScoupler/full/land_ice_flux_exchange.F90 $(SRCROOT)FMScoupler/full/atmos_ocean_fluxes_calc.f90 $(SRCROOT)FMScoupler/full/atmos_ocean_dep_fluxes_calc.f90 $(SRCROOT)FMScoupler/full/coupler_main.F90 $(SRCROOT)FMScoupler/shared/surface_flux.F90 $(SRCROOT)FMScoupler/full/atm_land_ice_flux_exchange.F90 $(SRCROOT)FMScoupler/full/flux_exchange.F90
+OBJ = ice_ocean_flux_exchange.o land_ice_flux_exchange.o atmos_ocean_fluxes_calc.o atmos_ocean_dep_fluxes_calc.o coupler_main.o surface_flux.o atm_land_ice_flux_exchange.o flux_exchange.o
+OFF = $(SRCROOT)FMScoupler/full/flux_exchange.F90 $(SRCROOT)FMScoupler/full/coupler_main.F90 $(SRCROOT)FMScoupler/full/atmos_ocean_fluxes_calc.f90 $(SRCROOT)FMScoupler/full/atm_land_ice_flux_exchange.F90 $(SRCROOT)FMScoupler/full/land_ice_flux_exchange.F90 $(SRCROOT)FMScoupler/full/atmos_ocean_dep_fluxes_calc.f90 $(SRCROOT)FMScoupler/shared/surface_flux.F90 $(SRCROOT)FMScoupler/full/ice_ocean_flux_exchange.F90
 clean: neat
-	$(RM) $(OBJ) libcoupler.a
-	$(RM) *.mod
+	-rm -f .libcoupler.a.cppdefs $(OBJ) libcoupler.a
 
 neat:
-	$(RM) $(TMPFILES)
+	-rm -f $(TMPFILES)
+
+localize: $(OFF)
+	cp $(OFF) .
 
 TAGS: $(SRC)
 	etags $(SRC)
