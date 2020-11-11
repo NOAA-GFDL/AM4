@@ -18,7 +18,7 @@ The layout of this package includes the following directories:
 
 * src - The source code for the AM4 model
 * exec - The build directory with Makefiles for building the model executable
-* run - Sample run script
+* run - Sample run script and updated files needed for running
 * analysis - Sample analysis scripts
 
 ## Cloning Instructions
@@ -139,8 +139,10 @@ gpg --verify AM4_run.tar.gz.sig
 Included in the run directory is a sample run script for reference.
 To run the AM4 sample experiment, first download the data file
 mentioned in [Obtaining the Input data](#obtaining-the-input-data)
-section.  Modify the variables in the configuration section in the
-sample run script, and then run the script.
+section.  Replace diag_table and input.nml in the top level of the 
+untar'd directory with the corresponding files in the run directory
+of this repository. Modify the variables in the configuration section
+in the sample run script, and then run the script.
 
 The sample data and run script are configured to run on 216
 processors.  To run on a different number of processors, or modify the
