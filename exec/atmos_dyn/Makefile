@@ -2,7 +2,7 @@
 
 CPPDEFS = -DINTERNAL_FILE_NML -g -DCLIMATE_NUDGE -DSPMD 
 
-OTHERFLAGS = -I$(BUILDROOT)atmos_phys -I$(BUILDROOT)fms -I$(SRCROOT)shared/include
+OTHERFLAGS = -I$(BUILDROOT)atmos_cubed_sphere -I$(BUILDROOT)atmos_phys -I$(BUILDROOT)fms -I$(SRCROOT)shared/include
 
 include $(MK_TEMPLATE)
 
