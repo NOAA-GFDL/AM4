@@ -5,10 +5,10 @@
 
 ############
 # Command Macros
-FC = mpifort
+FC = mpif90
 CC = mpicc
-CXX = mpicpc
-LD = mpifort
+CXX = mpicc
+LD = mpif90
 
 #######################
 # Build target macros
@@ -101,9 +101,12 @@ FPPFLAGS += $(shell pkg-config --cflags-only-I mpich2-c)
 else
 FPPFLAGS += $(MPI_FLAGS)
 endif
+ifdef HDF_INCLUDE
+FPPFLAGS += $(HDF_INCLUDE)
+endif
 
 # Base set of Fortran compiler flags
-FFLAGS := -fcray-pointer -fdefault-real-8 -fdefault-double-8 -Waliasing -ffree-line-length-none -fno-range-check
+FFLAGS := -fcray-pointer -fdefault-real-8 -fdefault-double-8 -Waliasing -ffree-line-length-none -fno-range-check -fallow-invalid-boz -fallow-argument-mismatch
 
 # Flags based on perforance target (production (OPT), reproduction (REPRO), or debug (DEBUG)
 FFLAGS_OPT = -O2 -fno-expensive-optimizations
@@ -163,7 +166,7 @@ LDFLAGS_COVERAGE :=
 LIBS =
 # NetCDF library flags
 ifndef NETCDF_LIBS
-LIBS += $(shell nf-config --flibs)
+LIBS += $(shell nf-config --flibs) $(shell nc-config --libs)
 else
 LIBS += $(NETCDF_LIBS)
 endif

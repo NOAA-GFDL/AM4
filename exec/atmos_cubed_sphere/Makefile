@@ -2,7 +2,7 @@
 
 CPPDEFS = -DINTERNAL_FILE_NML -g -DCLIMATE_NUDGE -DSPMD 
 
-OTHERFLAGS = -I$(BUILDROOT)atmos_phys -I$(BUILDROOT)fms -I$(SRCROOT)shared/include
+OTHERFLAGS = -I$(BUILDROOT)atmos_phys -I$(BUILDROOT)fms -I$(SRCROOT)FMS/include
 
 include $(MK_TEMPLATE)
 
@@ -183,7 +183,7 @@ SRC = $(SRCROOT)GFDL_atmos_cubed_sphere/model/fv_fill.F90 $(SRCROOT)GFDL_atmos_c
 OBJ = fv_fill.o tp_core.o fv_mp_mod.o read_climate_nudge_data.o fv_io.o init_hydro.o fv_control.o fv_treat_da_inc.o fv_climate_nudge.o sw_core.o nh_core.o fv_tracer2d.o fv_grid_utils.o fv_ada_nudge.o fv_timing.o fv_mapz.o dyn_core.o fv_update_phys.o test_cases.o fv_sg.o fv_nesting.o fv_cmp.o fv_surf_map.o fv_cmip_diag.o fv_dynamics.o fv_diagnostics.o fv_regional_bc.o fv_nudge.o nh_utils.o external_sst.o fv_restart.o fv_grid_tools.o fv_eta.o sim_nc_mod.o sorted_index.o atmosphere.o fv_nggps_diag.o external_ic.o a2b_edge.o boundary.o fv_arrays.o
 OFF = $(SRCROOT)GFDL_atmos_cubed_sphere/model/tp_core.F90 $(SRCROOT)GFDL_atmos_cubed_sphere/tools/fv_eta.F90 $(SRCROOT)GFDL_atmos_cubed_sphere/tools/fv_diagnostics.F90 $(SRCROOT)GFDL_atmos_cubed_sphere/tools/fv_surf_map.F90 $(SRCROOT)GFDL_atmos_cubed_sphere/model/fv_regional_bc.F90 $(SRCROOT)GFDL_atmos_cubed_sphere/model/fv_tracer2d.F90 $(SRCROOT)GFDL_atmos_cubed_sphere/tools/fv_restart.F90 $(SRCROOT)GFDL_atmos_cubed_sphere/tools/external_sst.F90 $(SRCROOT)GFDL_atmos_cubed_sphere/model/a2b_edge.F90 $(SRCROOT)GFDL_atmos_cubed_sphere/model/fv_nesting.F90 $(SRCROOT)GFDL_atmos_cubed_sphere/model/fv_dynamics.F90 $(SRCROOT)GFDL_atmos_cubed_sphere/GFDL_tools/read_climate_nudge_data.F90 $(SRCROOT)GFDL_atmos_cubed_sphere/tools/test_cases.F90 $(SRCROOT)GFDL_atmos_cubed_sphere/tools/fv_io.F90 $(SRCROOT)GFDL_atmos_cubed_sphere/model/fv_fill.F90 $(SRCROOT)GFDL_atmos_cubed_sphere/tools/sim_nc_mod.F90 $(SRCROOT)FMS/include/fms_platform.h $(SRCROOT)GFDL_atmos_cubed_sphere/tools/fv_treat_da_inc.F90 $(SRCROOT)GFDL_atmos_cubed_sphere/tools/external_ic.F90 $(SRCROOT)FMS/include/file_version.h $(SRCROOT)GFDL_atmos_cubed_sphere/tools/fv_eta.h $(SRCROOT)GFDL_atmos_cubed_sphere/model/nh_core.F90 $(SRCROOT)GFDL_atmos_cubed_sphere/model/fv_update_phys.F90 $(SRCROOT)GFDL_atmos_cubed_sphere/model/fv_arrays.F90 $(SRCROOT)GFDL_atmos_cubed_sphere/model/dyn_core.F90 $(SRCROOT)GFDL_atmos_cubed_sphere/model/fv_control.F90 $(SRCROOT)GFDL_atmos_cubed_sphere/tools/fv_timing.F90 $(SRCROOT)GFDL_atmos_cubed_sphere/model/fv_cmp.F90 $(SRCROOT)GFDL_atmos_cubed_sphere/model/fv_sg.F90 $(SRCROOT)GFDL_atmos_cubed_sphere/tools/init_hydro.F90 $(SRCROOT)GFDL_atmos_cubed_sphere/model/fv_mapz.F90 $(SRCROOT)GFDL_atmos_cubed_sphere/tools/fv_nggps_diag.F90 $(SRCROOT)GFDL_atmos_cubed_sphere/GFDL_tools/fv_ada_nudge.F90 $(SRCROOT)GFDL_atmos_cubed_sphere/tools/fv_grid_tools.F90 $(SRCROOT)GFDL_atmos_cubed_sphere/tools/fv_nudge.F90 $(SRCROOT)GFDL_atmos_cubed_sphere/driver/GFDL/atmosphere.F90 $(SRCROOT)GFDL_atmos_cubed_sphere/tools/fv_mp_mod.F90 $(SRCROOT)GFDL_atmos_cubed_sphere/model/sw_core.F90 $(SRCROOT)GFDL_atmos_cubed_sphere/tools/sorted_index.F90 $(SRCROOT)GFDL_atmos_cubed_sphere/GFDL_tools/fv_cmip_diag.F90 $(SRCROOT)GFDL_atmos_cubed_sphere/model/boundary.F90 $(SRCROOT)GFDL_atmos_cubed_sphere/model/fv_grid_utils.F90 $(SRCROOT)GFDL_atmos_cubed_sphere/model/nh_utils.F90 $(SRCROOT)GFDL_atmos_cubed_sphere/GFDL_tools/fv_climate_nudge.F90
 clean: neat
-	-rm -f .libatmos_cubed_sphere.a.cppdefs $(OBJ) libatmos_cubed_sphere.a
+	-rm -f .libatmos_cubed_sphere.a.cppdefs libatmos_cubed_sphere.a *.o *.mod
 
 neat:
 	-rm -f $(TMPFILES)

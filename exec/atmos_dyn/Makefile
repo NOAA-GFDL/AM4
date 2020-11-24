@@ -2,7 +2,7 @@
 
 CPPDEFS = -DINTERNAL_FILE_NML -g -DCLIMATE_NUDGE -DSPMD 
 
-OTHERFLAGS = -I$(BUILDROOT)atmos_cubed_sphere -I$(BUILDROOT)atmos_phys -I$(BUILDROOT)fms -I$(SRCROOT)shared/include
+OTHERFLAGS = -I$(BUILDROOT)atmos_cubed_sphere -I$(BUILDROOT)atmos_phys -I$(BUILDROOT)fms -I$(SRCROOT)FMS/include
 
 include $(MK_TEMPLATE)
 
@@ -20,7 +20,7 @@ SRC = $(SRCROOT)atmos_drivers/coupled/atmos_model.F90 $(SRCROOT)FMS/include/file
 OBJ = atmos_model.o
 OFF = $(SRCROOT)atmos_drivers/coupled/atmos_model.F90 $(SRCROOT)FMS/include/file_version.h
 clean: neat
-	-rm -f .libatmos_dyn.a.cppdefs $(OBJ) libatmos_dyn.a
+	-rm -f .libatmos_dyn.a.cppdefs  libatmos_dyn.a *.mod *.o
 
 neat:
 	-rm -f $(TMPFILES) *.mod
