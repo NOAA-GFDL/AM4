@@ -49,6 +49,7 @@ clean:
 	$(MAKE) --directory=$(BUILDROOT)fms clean
 	$(MAKE) --directory=$(BUILDROOT)atmos_phys clean
 	$(MAKE) --directory=$(BUILDROOT)atmos_dyn clean
+	$(MAKE) --directory=$(BUILDROOT)atmos_cubed_sphere clean
 	$(MAKE) --directory=$(BUILDROOT)ice_sis clean
 	$(MAKE) --directory=$(BUILDROOT)land_lad2 clean
 	$(MAKE) --directory=$(BUILDROOT)mom6 clean
