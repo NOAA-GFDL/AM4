@@ -30,7 +30,7 @@ and updating the source to ensure all source.  To obtain all source,
 use the following git command
 
 ```
-git clone --recursive https://github.com/NOAA-GFDL/AM4.git
+git clone --recursive https://github.com/NOAA-GFDL/AM4.git -b release/MG2_xanadu_2020.02.01
 ```
 
 The `--recursive` option to `git clone` instructs git to recursively
