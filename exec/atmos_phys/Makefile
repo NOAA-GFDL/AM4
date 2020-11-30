@@ -2,7 +2,7 @@
 
 CPPDEFS = -DINTERNAL_FILE_NML -g -DCLUBB
 
-OTHERFLAGS = -I$(BUILDROOT)fms -I$(SRCROOT)shared/include
+OTHERFLAGS = -I$(BUILDROOT)fms -I$(SRCROOT)FMS/include
 
 TMPFILES = *.f90 *.mod
 
