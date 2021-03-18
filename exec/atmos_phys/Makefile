@@ -1,6 +1,11 @@
 # Makefile created by mkmf 19.3.1
 
-CPPDEFS = -DINTERNAL_FILE_NML -g -DCLUBB
+# Compile with or without CLUBB (default is on)
+ifeq ($(CLUBB),off)
+ CPPDEFS = -DINTERNAL_FILE_NML -g 
+else
+ CPPDEFS = -DINTERNAL_FILE_NML -g -DCLUBB
+endif
 
 OTHERFLAGS = -I$(BUILDROOT)fms -I$(SRCROOT)FMS/include
 

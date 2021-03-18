@@ -3,7 +3,16 @@
 BUILDROOT = $(dir $(abspath $(firstword $(MAKEFILE_LIST))))
 SRCROOT = $(abspath $(BUILDROOT)../src)/ # Final '/' added to denote directory
 
-MK_TEMPLATE = $(BUILDROOT)templates/intel.mk
+# Select the make template (default is intel)
+ifeq ($(gcc),on)
+  MK_TEMPLATE = $(BUILDROOT)templates/gnu.mk
+else
+  MK_TEMPLATE = $(BUILDROOT)templates/intel.mk
+endif
+# Set shell to sh
+ifeq ($(SH),sh)
+  SHELL=/bin/sh
+endif
 
 # Override default compile options. See templates/intel.mk for more compile options.
 # BLD_TYPE configures the type of build, PROD (production), REPRO (regression) or
