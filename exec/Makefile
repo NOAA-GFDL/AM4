@@ -1,4 +1,4 @@
-# Makefile for Experiment 'cm4p12_xanadu_2020.02_mg2'
+# Makefile for Experiment 'cm4p12_xanadu_2021.01'
 
 BUILDROOT = $(dir $(abspath $(firstword $(MAKEFILE_LIST))))
 SRCROOT = $(abspath $(BUILDROOT)../src)/ # Final '/' added to denote directory
