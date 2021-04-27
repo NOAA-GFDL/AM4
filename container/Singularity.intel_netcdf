@@ -1,0 +1,113 @@
+Bootstrap: docker
+From: intel/oneapi-hpckit:devel-ubuntu18.04 
+Stage: build
+
+%post
+## Set up oneAPI
+  apt-get -yqq update  
+  apt-get -yqq upgrade
+  apt-get -yqq install git make
+  apt-get -yqq install wget
+  apt-get -yqq install m4
+# use wget to fetch the Intel repository public key
+# cd /tmp
+# wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
+## add to your apt sources keyring so that archives signed with this key will be trusted.
+# apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
+## remove the public key
+# rm GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
+# echo "deb https://apt.repos.intel.com/oneapi all main" | tee /etc/apt/sources.list.d/oneAPI.list
+# apt update -y
+# apt install -y intel-basekit intel-hpckit
+##
+ FC=ifort 
+ CC=icc
+
+ build=/opt
+ IO_LIBS=${build}/io_libs
+## Build zlib and szip and curl
+ cd $build 
+ zlib="zlib-1.2.11" 
+ rm -rf zlib* 
+ wget http://www.zlib.net/zlib-1.2.11.tar.gz 
+ tar xzf zlib-1.2.11.tar.gz 
+ cd $zlib 
+ ./configure --prefix=${IO_LIBS} 
+ make 
+ make -j 20 install
+# CC "icc -fPIC"
+ cd $build 
+ szip="szip-2.1.1" 
+ rm -rf szip* 
+ wget https://support.hdfgroup.org/ftp/lib-external/szip/2.1.1/src/szip-2.1.1.tar.gz 
+ tar xzf szip-2.1.1.tar.gz 
+ cd $szip 
+ ./configure FC=ifort CC=icc --prefix=${IO_LIBS} CPPDEFS="-fPIC" 
+ make 
+ make -j 20 install
+ cd $build 
+ curl="curl-7.74.0" 
+ rm -rf curl* 
+ wget https://curl.haxx.se/download/${curl}.tar.gz 
+ tar xzf ${curl}.tar.gz 
+ cd $curl 
+ ./configure FC=ifort CC=icc --prefix=${IO_LIBS} 
+ make 
+ make -j 20 install
+
+ LD_LIBRARY_PATH=${IO_LIBS}/lib:${LD_LIBRARY_PATH}:/opt/io_libs/lib
+#*********************
+## Install hdf5 with fortran
+#*********************
+ cd /opt 
+ hdf5="hdf5-1.12.0"  
+ wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/${hdf5}/src/${hdf5}.tar.gz 
+ tar xzf ${hdf5}.tar.gz 
+ cd $hdf5 
+ hdf5_opts="FC=ifort CC=icc LDFLAGS=-L/opt/io_libs/lib --prefix=/opt/hdf5 --enable-fortran --enable-hl --with-zlib=/opt/io_libs/lib"
+ ./configure FC=ifort CC=icc LDFLAGS='-L/opt/io_libs/lib -lz' --prefix=/opt/hdf5 --enable-fortran --enable-hl --with-zlib=/opt/io_libs --with-szib=/opt/io_libs 
+ make -j 20 install 
+ echo "HDF5 finished building"
+
+#*********************
+## Install NetCDF-C
+#*********************
+ LD_LIBRARY_PATH=/opt/hdf5/lib:${LD_LIBRARY_PATH}
+ cd /opt 
+ version="4.7.4" 
+ netcdfc="netcdf-c-"${version} 
+ rm -rf netcdf 
+ wget -O ${netcdfc}.tar.gz https://github.com/Unidata/netcdf-c/archive/v${version}.tar.gz 
+ tar xzf ${netcdfc}.tar.gz 
+ cd $netcdfc 
+ ./configure --prefix=/opt/netcdf-c CPPFLAGS='-I/opt/hdf5/include -I${IO_LIBS}/include' LDFLAGS='-L/opt/hdf5/lib -L/opt/io_libs/lib -lz' --disable-dap 
+ make 
+ make -j 20 install 
+ echo " NetCDF-C finished building"
+
+ LD_LIBRARY_PATH=/opt/netcdf-c/lib:${LD_LIBRARY_PATH}
+ PATH=/opt/netcdf-c/bin:${PATH}
+
+## Install netcdf fortran
+ LDFLAGS="-L/opt/netcdf-c/lib -lnetcdf"
+ LIBS="-L/opt/netcdf-c/lib -lnetcdf"
+ cd /opt 
+ nfversion=4.5.3 
+ netcdff="netcdf-fortran-${nfversion}" 
+ rm -rf $netcdff 
+ wget -O ${netcdff}.tar.gz https://github.com/Unidata/netcdf-fortran/archive/v${nfversion}.tar.gz 
+ tar xzf ${netcdff}.tar.gz 
+ cd $netcdff 
+ ./configure CPPFLAGS="-I/opt/netcdf-c/include -I/opt/hdf5/include/" LDFLAGS="-L/opt/netcdf-c/lib -lnetcdf" --prefix=/opt/netcdf-fortran 
+ make 
+ make -j20 install
+
+ PATH=/opt/netcdf-fortran/bin:${PATH}
+
+ LD_LIBRARY_PATH=/opt/netcdf-c/lib:/opt/hdf5/lib:/opt/netcdf-fortran/lib:${LD_LIBRARY_PATH}
+ LIBRARY_PATH=${LD_LIBRARY_PATH}
+
+
+%environment
+PATH=/opt/netcdf-fortran/bin:/opt/netcdf-c/bin:/opt/intel/oneapi/mpi/latest/bin:/opt/intel/oneapi/compiler/latest/linux/bin/intel64:${PATH}
+LD_LIBRARY_PATH=/opt/netcdf-c/lib:/opt/hdf5/lib:/opt/netcdf-fortran/lib:/opt/io_libs/lib:${LD_LIBRARY_PATH}
