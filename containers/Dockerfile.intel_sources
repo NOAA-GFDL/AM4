@@ -1,0 +1,123 @@
+FROM intel/oneapi-hpckit:2021.2-devel-centos8 as builder
+LABEL maintainer "Tom Robinson"
+
+#-------------------------------------------------------------
+## Set up packages needed
+RUN yum update -y 
+RUN yum install -y git
+RUN yum install -y patch
+RUN yum install -y zlib
+RUN yum install -y wget
+RUN yum install -y curl 
+RUN yum install -y m4
+
+## Set compilers
+ENV FC=ifort
+ENV CC=icc
+ENV build=/opt
+ENV IO_LIBS=${build}/io_libs
+## Build zlib and szip and curl
+RUN cd $build \
+&& zlib="zlib-1.2.11" \
+&& rm -rf zlib* \
+&& wget http://www.zlib.net/zlib-1.2.11.tar.gz \
+&& tar xzf zlib-1.2.11.tar.gz \
+&& cd $zlib \
+&& ./configure --prefix=${IO_LIBS} \
+&& make \
+&& make -j 20 install
+ENV CC "icc -fPIC"
+RUN cd $build \
+&& szip="szip-2.1.1" \
+&& rm -rf szip* \
+&& wget https://support.hdfgroup.org/ftp/lib-external/szip/2.1.1/src/szip-2.1.1.tar.gz \
+&& tar xzf szip-2.1.1.tar.gz \
+&& cd $szip \
+&& ./configure FC=ifort CC=icc --prefix=${IO_LIBS} CPPDEFS="-fPIC" \
+&& make \
+&& make -j 20 install
+RUN cd $build \
+&& curl="curl-7.74.0" \
+&& rm -rf curl* \
+&& wget https://curl.haxx.se/download/${curl}.tar.gz \
+&& tar xzf ${curl}.tar.gz \
+&& cd $curl \
+&& ./configure FC=ifort CC=icc --prefix=${IO_LIBS} \
+&& make \
+&& make -j 20 install
+
+ENV LD_LIBRARY_PATH=${IO_LIBS}/lib:${LD_LIBRARY_PATH}:/opt/io_libs/lib
+
+## Set compilers
+ENV FC=ifort
+ENV CC=icc
+## Install HDF5
+RUN cd /opt \
+&& hdf5="hdf5-1.12.0"  \
+&& wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/${hdf5}/src/${hdf5}.tar.gz \
+&& tar xzf ${hdf5}.tar.gz \
+&& cd $hdf5 \
+&& hdf5_opts="FC=ifort CC=icc --prefix=/opt/hdf5 --enable-fortran --enable-hl" \
+&& ./configure $hdf5_opts \
+&& make -j 20 install \
+&& echo "HDF5 finished building"
+
+#*********************
+## Install NetCDF-C
+#*********************
+ENV LD_LIBRARY_PATH=/opt/hdf5/lib:${LD_LIBRARY_PATH}
+RUN cd /opt \
+&& version="4.7.4" \
+&& netcdfc="netcdf-c-"${version} \
+&& rm -rf netcdf \
+&& wget -O ${netcdfc}.tar.gz https://github.com/Unidata/netcdf-c/archive/v${version}.tar.gz \
+&& tar xzf ${netcdfc}.tar.gz \
+&& cd $netcdfc \
+&& ./configure --prefix=/opt/netcdf-c CPPFLAGS='-I/opt/hdf5/include -I${IO_LIBS}/include' LDFLAGS='-L/opt/hdf5/lib -L${IO_LIBS}/lib' --disable-dap \ 
+&& make \
+&& make -j 20 install \
+&& echo " NetCDF-C finished building"
+
+ENV LD_LIBRARY_PATH=/opt/netcdf-c/lib:${LD_LIBRARY_PATH}
+ENV PATH=/opt/netcdf-c/bin:${PATH}
+
+## Install netcdf fortran
+ENV LDFLAGS="-L/opt/netcdf-c/lib -lnetcdf"
+RUN cd /opt \
+&& nfversion=4.5.3 \
+&& netcdff="netcdf-fortran-${nfversion}" \
+&& rm -rf $netcdff \
+&& wget -O ${netcdff}.tar.gz https://github.com/Unidata/netcdf-fortran/archive/v${nfversion}.tar.gz \
+&& tar xzf ${netcdff}.tar.gz \
+&& cd $netcdff \
+&& ./configure CPPFLAGS="-I/opt/netcdf-c/include -I/opt/hdf5/include/" --prefix=/opt/netcdf-fortran \
+&& make \
+&& make -j20 install
+
+ENV PATH=/opt/netcdf-fortran/bin:${PATH}
+
+ENV LD_LIBRARY_PATH=/opt/netcdf-c/lib:/opt/hdf5/lib:/opt/netcdf-fortran/lib:${LD_LIBRARY_PATH}
+ENV LIBRARY_PATH=${LD_LIBRARY_PATH}
+
+## Build the model
+RUN mkdir -p /opt/AM4
+RUN git clone --recursive https://github.com/NOAA-GFDL/AM4.git -b xanadu_2021.01 \
+ && cd AM4/exec \
+ && make HDF_INCLUDE=-I/opt/hdf5/include \
+ && cp am4_xanadu_2021.01.x /opt/AM4 \
+ && make clean_all
+
+##############################################################################################################
+# Stage 2 with the minimum
+FROM intel/oneapi-runtime:centos8
+RUN ls
+COPY --from=builder /opt/netcdf-c /opt/netcdf-c
+COPY --from=builder /opt/netcdf-fortran /opt/netcdf-fortran
+COPY --from=builder /opt/hdf5 /opt/hdf5
+COPY --from=builder /opt/AM4 /opt/AM4
+ENV PATH=/opt/AM4:/opt/netcdf-fortran/bin:/opt/netcdf-c/bin:${PATH}
+ENV LD_LIBRARY_PATH=/opt/netcdf-c/lib:/opt/hdf5/lib:/opt/netcdf-fortran/lib:/opt/io_libs/lib${LD_LIBRARY_PATH}
+ENV LIBRARY_PATH=${LD_LIBRARY_PATH}
+## Add permissions to the AM4
+RUN chmod 777 /opt/AM4/am4_xanadu_2021.01.x
+
