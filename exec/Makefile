@@ -24,7 +24,7 @@ include $(MK_TEMPLATE)
 
 SUBMAKEFLAGS = BUILDROOT=$(BUILDROOT) SRCROOT=$(SRCROOT) MK_TEMPLATE=$(MK_TEMPLATE) BLD_TYPE=$(BLD_TYPE)
 
-am4_xanadu_2021.01.x: coupler/libcoupler.a atmos_dyn/libatmos_dyn.a ice_sis/libice_sis.a atmos_cubed_sphere/libatmos_cubed_sphere.a atmos_phys/libatmos_phys.a mom6/libmom6.a land_lad2/libland_lad2.a fms/libfms.a
+am4_xanadu_2021.02.x: coupler/libcoupler.a atmos_dyn/libatmos_dyn.a ice_sis/libice_sis.a atmos_cubed_sphere/libatmos_cubed_sphere.a atmos_phys/libatmos_phys.a mom6/libmom6.a land_lad2/libland_lad2.a fms/libfms.a
 	$(LD) $^ $(LDFLAGS) -o $@ $(STATIC_LIBS)
 
 fms/libfms.a:  FORCE
