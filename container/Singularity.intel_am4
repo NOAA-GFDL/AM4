@@ -35,5 +35,5 @@ export F_UFMTENDIAN=big
 ## Run AM4
 %runscript
  ulimit -s unlimited
- /opt/AM4/am4_xanadu_2021.01.x
+ /opt/AM4/am4_xanadu_2021.02.x
 
