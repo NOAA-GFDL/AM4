@@ -101,10 +101,10 @@ ENV LIBRARY_PATH=${LD_LIBRARY_PATH}
 
 ## Build the model
 RUN mkdir -p /opt/AM4
-RUN git clone --recursive https://github.com/NOAA-GFDL/AM4.git -b xanadu_2021.01 \
+RUN git clone --recursive https://github.com/NOAA-GFDL/AM4.git -b 2021.02 \
  && cd AM4/exec \
  && make HDF_INCLUDE=-I/opt/hdf5/include \
- && cp am4_xanadu_2021.01.x /opt/AM4 \
+ && cp am4_xanadu_2021.02.x /opt/AM4 \
  && make clean_all
 
 ##############################################################################################################
@@ -119,5 +119,5 @@ ENV PATH=/opt/AM4:/opt/netcdf-fortran/bin:/opt/netcdf-c/bin:${PATH}
 ENV LD_LIBRARY_PATH=/opt/netcdf-c/lib:/opt/hdf5/lib:/opt/netcdf-fortran/lib:/opt/io_libs/lib${LD_LIBRARY_PATH}
 ENV LIBRARY_PATH=${LD_LIBRARY_PATH}
 ## Add permissions to the AM4
-RUN chmod 777 /opt/AM4/am4_xanadu_2021.01.x
+RUN chmod 777 /opt/AM4/am4_xanadu_2021.02.x
 
