@@ -3,3 +3,4 @@
 *.mod
 *.DO_NOT_MODIFY.f90
 *.x
+*.a
