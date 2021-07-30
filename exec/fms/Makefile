@@ -4,16 +4,18 @@ CPPDEFS = -DINTERNAL_FILE_NML -Duse_libMPI -Duse_netCDF
 
 
 include $(MK_TEMPLATE)
-include $(MK_TEMPLATE)
 
 .DEFAULT:
 	-echo $@ does not exist.
 all: libfms.a
 
-libfms.a:
+libfms.a: folder configure build 
+	ln -f build/libFMS/.libs/libFMS.a libfms.a
+folder:
 	mkdir -p build && cd build && autoreconf -i ${SRCROOT}/FMS 
-	cd build && ${SRCROOT}/FMS/configure FC="$(FC)" CC="$(CC)" CFLAGS="$(CFLAGS)" FFLAGS="$(FFLAGS)" CPPFLAGS="$(CPPFLAGS)" FPPFLAGS="$(FPPFLAGS)" 
+configure: folder
+	cd build && ${SRCROOT}/FMS/configure FC="$(FC)" CC="$(CC)" FCFLAGS="$(FFLAGS)" CFLAGS="$(CFLAGS)" CPPFLAGS="$(CPPFLAGS) $(CPPDEFS)" FPPFLAGS="$(FPPFLAGS)" 
+build: configure
 	cd build && make -j 32
-
 clean:
-	rm -rf build
+	rm -rf build *.a* .log

@@ -2,7 +2,7 @@
 
 CPPDEFS = -DINTERNAL_FILE_NML
 
-OTHERFLAGS = -I$(BUILDROOT)fms
+OTHERFLAGS = -I$(BUILDROOT)fms/build/.mods
 
 include $(MK_TEMPLATE)
 
