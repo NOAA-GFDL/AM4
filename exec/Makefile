@@ -24,32 +24,34 @@ include $(MK_TEMPLATE)
 
 SUBMAKEFLAGS = BUILDROOT=$(BUILDROOT) SRCROOT=$(SRCROOT) MK_TEMPLATE=$(MK_TEMPLATE) BLD_TYPE=$(BLD_TYPE)
 
-am4_xanadu_2021.02.x: coupler/libcoupler.a atmos_dyn/libatmos_dyn.a ice_sis/libice_sis.a atmos_cubed_sphere/libatmos_cubed_sphere.a atmos_phys/libatmos_phys.a mom6/libmom6.a land_lad2/libland_lad2.a fms/libfms.a
-	$(LD) $^ $(LDFLAGS) -o $@ $(STATIC_LIBS)
+am4_xanadu_2021.02.x: coupler/libcoupler.a atmos_dyn/libatmos_dyn.a ice_sis/libice_sis.a atmos_cubed_sphere/libatmos_cubed_sphere.a atmos_phys/libatmos_phys.a mom6/libmom6.a land_lad2/libland_lad2.a fms/build/libFMS/.libs/libFMS.a
+	$(LD) $^ $(LDFLAGS) -Lfms/build -Lfms/build/libFMS/.libs -lFMS -o $@ $(STATIC_LIBS)
 
-fms/libfms.a:  FORCE
-	$(MAKE) $(SUBMAKEFLAGS) OPENMP=$(OPENMP) --directory=$(BUILDROOT)fms $(@F)
+fms/build/libFMS/.libs/libFMS.a:  FORCE
+#	echo $(MAKE) $(SUBMAKEFLAGS) OPENMP=$(OPENMP) --directory=$(BUILDROOT)fms $(@F)
+#	exit 1
+	$(MAKE) $(SUBMAKEFLAGS) OPENMP=$(OPENMP) --directory=$(BUILDROOT)fms $(@F) 
 
-atmos_phys/libatmos_phys.a: fms/libfms.a FORCE
+atmos_phys/libatmos_phys.a: fms/build/libFMS/.libs/libFMS.a FORCE
 	$(MAKE) $(SUBMAKEFLAGS) OPENMP=$(OPENMP) --directory=$(BUILDROOT)atmos_phys $(@F)
 
-atmos_cubed_sphere/libatmos_cubed_sphere.a: atmos_phys/libatmos_phys.a fms/libfms.a FORCE
+atmos_cubed_sphere/libatmos_cubed_sphere.a: atmos_phys/libatmos_phys.a fms/build/libFMS/.libs/libFMS.a FORCE
 	$(MAKE) $(SUBMAKEFLAGS) OPENMP=$(OPENMP) --directory=$(BUILDROOT)atmos_cubed_sphere $(@F)
 
-atmos_dyn/libatmos_dyn.a: atmos_cubed_sphere/libatmos_cubed_sphere.a atmos_phys/libatmos_phys.a fms/libfms.a FORCE
+atmos_dyn/libatmos_dyn.a: atmos_cubed_sphere/libatmos_cubed_sphere.a atmos_phys/libatmos_phys.a fms/build/libFMS/.libs/libFMS.a FORCE
 	$(MAKE) $(SUBMAKEFLAGS) OPENMP=$(OPENMP) --directory=$(BUILDROOT)atmos_dyn $(@F)
 
-ice_sis/libice_sis.a: mom6/libmom6.a fms/libfms.a FORCE
+ice_sis/libice_sis.a: mom6/libmom6.a fms/build/libFMS/.libs/libFMS.a FORCE
 	$(MAKE) $(SUBMAKEFLAGS) OPENMP=$(OPENMP) --directory=$(BUILDROOT)ice_sis $(@F)
 
-land_lad2/libland_lad2.a: fms/libfms.a FORCE
+land_lad2/libland_lad2.a: fms/build/libFMS/.libs/libFMS.a FORCE
 	$(MAKE) $(SUBMAKEFLAGS) OPENMP=$(OPENMP) --directory=$(BUILDROOT)land_lad2 $(@F)
 
 # MOM6 is currently unable to run with OpenMP enabled
-mom6/libmom6.a: fms/libfms.a FORCE
+mom6/libmom6.a: fms/build/libFMS/.libs/libFMS.a FORCE
 	$(MAKE) $(SUBMAKEFLAGS) --directory=$(BUILDROOT)mom6 $(@F)
 
-coupler/libcoupler.a: atmos_dyn/libatmos_dyn.a ice_sis/libice_sis.a mom6/libmom6.a land_lad2/libland_lad2.a atmos_phys/libatmos_phys.a fms/libfms.a FORCE
+coupler/libcoupler.a: atmos_dyn/libatmos_dyn.a ice_sis/libice_sis.a mom6/libmom6.a land_lad2/libland_lad2.a atmos_phys/libatmos_phys.a fms/build/libFMS/.libs/libFMS.a FORCE
 	$(MAKE) $(SUBMAKEFLAGS) OPENMP=$(OPENMP) --directory=$(BUILDROOT)coupler $(@F)
 
 FORCE:

@@ -7,15 +7,15 @@ include $(MK_TEMPLATE)
 
 .DEFAULT:
 	-echo $@ does not exist.
-all: libfms.a
+all: libFMS.a
 
-libfms.a: folder configure build 
-	ln -f build/libFMS/.libs/libFMS.a libfms.a
+libFMS.a: folder configure build 
+	ln -f build/libFMS/.libs/libFMS.a libFMS.a
 folder:
 	mkdir -p build && cd build && autoreconf -i ${SRCROOT}/FMS 
 configure: folder
-	cd build && ${SRCROOT}/FMS/configure FC="$(FC)" CC="$(CC)" FCFLAGS="$(FFLAGS)" CFLAGS="$(CFLAGS)" CPPFLAGS="$(CPPFLAGS) $(CPPDEFS)" FPPFLAGS="$(FPPFLAGS)" 
+	cd build && ${SRCROOT}/FMS/configure  --disable-shared FC="$(FC)" CC="$(CC)" FCFLAGS="$(FFLAGS)" CFLAGS="$(CFLAGS)" CPPFLAGS="$(CPPFLAGS) $(CPPDEFS)" FPPFLAGS="$(FPPFLAGS)" 
 build: configure
-	cd build && make -j 32
+	cd build && make -j 4
 clean:
-	rm -rf build *.a* .log
+	rm -rf build *.a* *.log
