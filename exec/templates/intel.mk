@@ -7,7 +7,7 @@
 # Command Macros
 FC = mpiifort
 CC = mpiicc
-CXX = mpiicpc
+CXX = mpiicc
 LD = mpiifort
 #######################
 # Build target macros

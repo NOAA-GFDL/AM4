@@ -2,7 +2,7 @@
 
 CPPDEFS = -DINTERNAL_FILE_NML
 
-OTHERFLAGS = -I$(BUILDROOT)fms
+OTHERFLAGS = -I$(BUILDROOT)fms/build/.mods
 
 include $(MK_TEMPLATE)
 
@@ -1062,7 +1062,7 @@ clean: neat
 	-rm -f .libmom6.a.cppdefs $(OBJ) libmom6.a
 
 neat:
-	-rm -f *.f90
+	-rm -f *.f90 *.mod
 
 localize: $(OFF)
 	cp $(OFF) .

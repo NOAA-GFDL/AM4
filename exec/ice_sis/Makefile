@@ -2,9 +2,11 @@
 
 CPPDEFS = -DINTERNAL_FILE_NML
 
-OTHERFLAGS = -I$(BUILDROOT)mom6 -I$(BUILDROOT)fms
+OTHERFLAGS = -I$(BUILDROOT)mom6 -I$(BUILDROOT)fms/build/.mods
 
 include $(MK_TEMPLATE)
+
+TMPFILES = *.o *.mod
 
 .DEFAULT:
 	-echo $@ does not exist.
