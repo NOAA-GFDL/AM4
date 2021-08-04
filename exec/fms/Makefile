@@ -16,6 +16,6 @@ folder:
 configure: folder
 	cd build && ${SRCROOT}/FMS/configure  --disable-shared FC="$(FC)" CC="$(CC)" FCFLAGS="$(FFLAGS)" CFLAGS="$(CFLAGS)" CPPFLAGS="$(CPPFLAGS) $(CPPDEFS)" FPPFLAGS="$(FPPFLAGS)" 
 build: configure
-	cd build && make -j 4
+	cd build && make -j 20
 clean:
 	rm -rf build *.a* *.log

@@ -1062,7 +1062,7 @@ clean: neat
 	-rm -f .libmom6.a.cppdefs $(OBJ) libmom6.a
 
 neat:
-	-rm -f *.f90
+	-rm -f *.f90 *.mod
 
 localize: $(OFF)
 	cp $(OFF) .
