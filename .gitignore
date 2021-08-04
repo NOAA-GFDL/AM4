@@ -27,8 +27,10 @@ pathnames*
 /*.zip
 /*.tar.gz
 *.swp
-DO_NOT_MODIFY.f90
-
+*DO_NOT_MODIFY.f90
+*genmod.f90
+*.sif
+*.x
 # From https://github.com/github/gitignore/blob/master/Autotools.gitignore
 # http://www.gnu.org/software/automake
 Makefile.in
