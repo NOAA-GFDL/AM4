@@ -14,7 +14,7 @@ libFMS.a: folder configure build
 folder:
 	mkdir -p build && cd build && autoreconf -i ${SRCROOT}/FMS 
 configure: folder
-	cd build && ${SRCROOT}/FMS/configure FC="$(FC)" CC="$(CC)" FCFLAGS="$(FFLAGS)" CFLAGS="$(CFLAGS)" CPPFLAGS="$(CPPFLAGS) $(CPPDEFS)" FPPFLAGS="$(FPPFLAGS)" LIBS="$(LIBS)" 
+	cd build && ${SRCROOT}/FMS/configure FC="$(FC)" CC="$(CC)" FCFLAGS="$(FFLAGS)" CFLAGS="$(CFLAGS)" CPPFLAGS="$(CPPFLAGS) $(CPPDEFS) $(FPPFLAGS)" FPPFLAGS="$(FPPFLAGS)" LIBS="$(LIBS)" 
 build: configure
 	cd build && make -j 20
 clean:
