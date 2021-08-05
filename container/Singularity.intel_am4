@@ -4,6 +4,8 @@ Stage: build
 ## Singularity def file used to create AM4
 
 %post
+LD_LIBRARY_PATH=/opt/netcdf-c/lib:/opt/netcdf-fortran/lib:/opt/hdf5/lib:/opt/intel/oneapi/lib:/opt/intel/oneapi/lib/intel64/:/opt/intel/oneapi/lib/intel64/lib:/opt/intel/oneapi/lib/intel64/libfabric:${LD_LIBRARY_PATH}
+export PATH=${PATH}:/opt/netcdf-c/bin:/opt/netcdf-fortran/bin
  cd /opt
 ## Build the AM4 from github
  git clone --recursive https://github.com/NOAA-GFDL/AM4.git -b main 
