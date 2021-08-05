@@ -91,6 +91,7 @@ FPPFLAGS = -fpp -Wp,-w $(INCLUDES)
 # Fortran Compiler flags for the NetCDF library
 ifndef NETCDF_FLAGS
 FPPFLAGS += $(shell nf-config --fflags) 
+FFLAGS += $(shell nf-config --fflags)
 else
 FPPFLAGS += $(NETCDF_FLAGS)
 endif
