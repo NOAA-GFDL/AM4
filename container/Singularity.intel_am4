@@ -1,5 +1,5 @@
 Bootstrap: localimage
-From: intel_netcdf_ubuntu.sif
+From: intel2021.2_netcdfc4.7.4_ubuntu.sif
 Stage: build
 ## Singularity def file used to create AM4
 
@@ -25,11 +25,12 @@ Stage: final
 /opt/netcdf-c
 /opt/netcdf-fortran
 /opt/AM4/am4_xanadu_2021.03.x
+/opt/AM4/exec/fms/build/libFMS/.libs/
 ## Add the AM4 executable to the path
 %environment
 PATH=/opt/AM4:/opt/netcdf-c/bin:/opt/netcdf-fortran/bin:${PATH}
-LD_LIBRARY_PATH=/opt/netcdf-c/lib:/opt/netcdf-fortran/lib:/opt/hdf5/lib:/opt/intel/oneapi/lib:/opt/intel/oneapi/lib/intel64/:/opt/intel/oneapi/lib/intel64/lib:/opt/intel/oneapi/lib/intel64/libfabric:${LD_LIBRARY_PATH}
-export LIBRARY_PATH=/opt/netcdf-c/lib:/opt/netcdf-fortran/lib:/opt/hdf5/lib:/opt/intel/oneapi/lib:/opt/intel/oneapi/lib/intel64/:/opt/intel/oneapi/lib/intel64/lib:/opt/intel/oneapi/lib/intel64/libfabric
+LD_LIBRARY_PATH=/opt/AM4/exec/fms/build/libFMS/.libs:/opt/netcdf-c/lib:/opt/netcdf-fortran/lib:/opt/hdf5/lib:/opt/intel/oneapi/lib:/opt/intel/oneapi/lib/intel64/:/opt/intel/oneapi/lib/intel64/lib:/opt/intel/oneapi/lib/intel64/libfabric:${LD_LIBRARY_PATH}
+export LIBRARY_PATH=/opt/AM4/exec/fms/build/libFMS/.libs:/opt/netcdf-c/lib:/opt/netcdf-fortran/lib:/opt/hdf5/lib:/opt/intel/oneapi/lib:/opt/intel/oneapi/lib/intel64/:/opt/intel/oneapi/lib/intel64/lib:/opt/intel/oneapi/lib/intel64/libfabric
 export KMP_STACKSIZE=512m
 export NC_BLKSZ=1M
 export F_UFMTENDIAN=big

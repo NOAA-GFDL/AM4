@@ -28,8 +28,6 @@ am4_xanadu_2021.03.x: coupler/libcoupler.a atmos_dyn/libatmos_dyn.a ice_sis/libi
 	$(LD) $^ $(LDFLAGS) -Lfms/build -Lfms/build/libFMS/.libs -lFMS -o $@ $(STATIC_LIBS)
 
 fms/build/libFMS/.libs/libFMS.a:  FORCE
-#	echo $(MAKE) $(SUBMAKEFLAGS) OPENMP=$(OPENMP) --directory=$(BUILDROOT)fms $(@F)
-#	exit 1
 	$(MAKE) $(SUBMAKEFLAGS) OPENMP=$(OPENMP) --directory=$(BUILDROOT)fms $(@F) 
 
 atmos_phys/libatmos_phys.a: fms/build/libFMS/.libs/libFMS.a FORCE

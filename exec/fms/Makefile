@@ -16,6 +16,6 @@ folder:
 configure: folder
 	cd build && ${SRCROOT}/FMS/configure FC="$(FC)" CC="$(CC)" FCFLAGS="$(FFLAGS)" CFLAGS="$(CFLAGS)" CPPFLAGS="$(CPPFLAGS) $(CPPDEFS) $(FPPFLAGS)" FPPFLAGS="$(FPPFLAGS)" LIBS="$(LIBS)" 
 build: configure
-	cd build && make -j 20
+	cd build && make -j 4
 clean:
 	rm -rf build *.a* *.log
