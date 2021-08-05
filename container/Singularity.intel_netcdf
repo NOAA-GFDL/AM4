@@ -1,14 +1,20 @@
 Bootstrap: docker
-From: intel/oneapi-hpckit:devel-ubuntu18.04 
+From: intel/oneapi-hpckit:2021.2-devel-ubuntu18.04 
 Stage: build
 
 %post
 ## Set up oneAPI
   apt-get -yqq update  
   apt-get -yqq upgrade
-  apt-get -yqq install git make
+  apt-get -yqq install git
+  apt-get -yqq install make
   apt-get -yqq install wget
   apt-get -yqq install m4
+  apt-get -yqq install autoconf
+  apt-get -yqq install automake
+  apt-get -yqq install libtool
+  apt-get -yqq install autogen
+  apt-get -yqq install intltool
 # use wget to fetch the Intel repository public key
 # cd /tmp
 # wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
