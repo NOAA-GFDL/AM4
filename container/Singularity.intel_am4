@@ -8,35 +8,33 @@ LD_LIBRARY_PATH=/opt/netcdf-c/lib:/opt/netcdf-fortran/lib:/opt/hdf5/lib:/opt/int
 export PATH=${PATH}:/opt/netcdf-c/bin:/opt/netcdf-fortran/bin
  cd /opt
 ## Build the AM4 from github
- git clone --recursive https://github.com/NOAA-GFDL/AM4.git -b main 
+ git clone --recursive https://github.com/NOAA-GFDL/AM4.git -b 2021.03
      cd AM4/exec 
      make -j 20 HDF_INCLUDE=-I/opt/hdf5/include HDF_LIBS="-L/opt/hdf5/lib -lhdf5 -lhdf5_fortran -lhdf5_hl -lhdf5hl_fortran" SH=sh
      cp am4_xanadu_2021.03.x /opt/AM4 
-     make clean_all
  chmod 777 /opt/AM4/am4_xanadu_2021.03.x
 
-
-Bootstrap: docker
-From: intel/oneapi-runtime:ubuntu18.04
-Stage: final
-
-%files from build
-/opt/hdf5
-/opt/netcdf-c
-/opt/netcdf-fortran
-/opt/AM4/am4_xanadu_2021.03.x
-/opt/AM4/exec/fms/build/libFMS/.libs/
-## Add the AM4 executable to the path
-%environment
-PATH=/opt/AM4:/opt/netcdf-c/bin:/opt/netcdf-fortran/bin:${PATH}
-LD_LIBRARY_PATH=/opt/AM4/exec/fms/build/libFMS/.libs:/opt/netcdf-c/lib:/opt/netcdf-fortran/lib:/opt/hdf5/lib:/opt/intel/oneapi/lib:/opt/intel/oneapi/lib/intel64/:/opt/intel/oneapi/lib/intel64/lib:/opt/intel/oneapi/lib/intel64/libfabric:${LD_LIBRARY_PATH}
-export LIBRARY_PATH=/opt/AM4/exec/fms/build/libFMS/.libs:/opt/netcdf-c/lib:/opt/netcdf-fortran/lib:/opt/hdf5/lib:/opt/intel/oneapi/lib:/opt/intel/oneapi/lib/intel64/:/opt/intel/oneapi/lib/intel64/lib:/opt/intel/oneapi/lib/intel64/libfabric
-export KMP_STACKSIZE=512m
-export NC_BLKSZ=1M
-export F_UFMTENDIAN=big
+### The two stage build with intel runtime libs is currently not working.
+#Bootstrap: docker
+#From: intel/oneapi-runtime:ubuntu18.04
+#Stage: final
+#
+#%files from build
+#/opt/hdf5
+#/opt/netcdf-c
+#/opt/netcdf-fortran
+#/opt/AM4/am4_xanadu_2021.03.x
+#/opt/AM4/exec/fms/build/libFMS/.libs
+### Add the AM4 executable to the path
+#%environment
+#PATH=/opt/AM4:/opt/netcdf-c/bin:/opt/netcdf-fortran/bin:${PATH}
+#LD_LIBRARY_PATH=/opt/AM4/exec/fms/build/libFMS/.libs:/opt/netcdf-c/lib:/opt/netcdf-fortran/lib:/opt/hdf5/lib:/opt/intel/oneapi/lib:/opt/intel/oneapi/lib/intel64/:/opt/intel/oneapi/lib/intel64/lib:/opt/intel/oneapi/lib/intel64/libfabric:/opt/intel/oneapi/mkl/2021.2.0/lib/intel64:${LD_LIBRARY_PATH}
+#export LIBRARY_PATH=/opt/AM4/exec/fms/build/libFMS/.libs:/opt/netcdf-c/lib:/opt/netcdf-fortran/lib:/opt/hdf5/lib:/opt/intel/oneapi/lib:/opt/intel/oneapi/lib/intel64/:/opt/intel/oneapi/lib/intel64/lib:/opt/intel/oneapi/lib/intel64/libfabric:/opt/intel/oneapi/mkl/2021.2.0/lib/intel64
+#export KMP_STACKSIZE=512m
+#export NC_BLKSZ=1M
+#export F_UFMTENDIAN=big
 
 ## Run AM4
 %runscript
  ulimit -s unlimited
  /opt/AM4/am4_xanadu_2021.03.x
-
