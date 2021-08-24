@@ -70,6 +70,14 @@ The following components are available in the
 
 ## Building AM4
 
+###Containers
+The [container folder](container) provides example Dockerfiles and Signularity 
+definition files to use to build AM4 containers using either GCC/GFORTAN or 
+Intel oneAPI. There is a script that can be used to build the intel 
+singularity containers, and the first step of this script can be used with the
+other GFDL climate models. 
+
+### From source
 The [exec](exec) directory contains Makefiles that can be used to
 build the AM4 executable.  These Makefiles were generated using the
 [Make Makefile (mkmf)](https://github.com/NOAA-GFDL/mkmf) program.
