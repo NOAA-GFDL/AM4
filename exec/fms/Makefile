@@ -10,7 +10,7 @@ include $(MK_TEMPLATE)
 all: libFMS.a
 
 libFMS.a: folder configure build 
-	ln -f build/libFMS/.libs/libFMS.a libFMS.a
+	ln -sf build/libFMS/.libs/libFMS.a libFMS.a
 folder:
 	mkdir -p build && cd build && autoreconf -i ${SRCROOT}/FMS 
 configure: folder
