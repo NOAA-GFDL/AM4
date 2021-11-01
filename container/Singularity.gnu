@@ -10,7 +10,7 @@ Stage: build
  mkdir -p /opt/AM4
  cd /opt
 ## Build the AM4 from github
- git clone --recursive https://github.com/NOAA-GFDL/AM4.git -b 2021.03 
+ git clone --recursive https://github.com/NOAA-GFDL/AM4.git -b main 
      cd AM4/exec 
      make -j 20 gcc=on HDF_INCLUDE=-I/opt/hdf5/include SH=sh CLUBB=off 
      cp am4_xanadu_2021.03.x /opt/AM4 
