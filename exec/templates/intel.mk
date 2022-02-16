@@ -196,16 +196,23 @@ endif
 ifeq ($(BLD_TYPE),REPRO)
 CFLAGS += $(CFLAGS_REPRO)
 FFLAGS += $(FFLAGS_REPRO)
+COBALT = -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -i4 -r8 -nowarn -sox -traceback -xsse2 -O0 
 else ifeq ($(BLD_TYPE),DEBUG)
 CFLAGS += $(CFLAGS_DEBUG)
 FFLAGS += $(FFLAGS_DEBUG)
+COBALT = -fpp -Wp,-w -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -i4 -r8 -nowarn -sox -traceback -g -O0 -check -check noarg_temp_created -check nopointer -warn -warn noerrors -fpe0 -ftrapuv -xsse2 $(FPPFLAGS)
 else ifeq ($(BLD_TYPE),TEST)
 CFLAGS += $(CFLAGS_TEST)
 FFLAGS += $(FFLAGS_TEST)
+COBALT = -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -i4 -r8 -nowarn -sox -traceback -xsse2 -O0
 else
 CFLAGS += $(CFLAGS_PROD)
 FFLAGS += $(FFLAGS_PROD)
+COBALT = $(FFLAGS)
 endif
+
+
+
 
 ifdef OPENMP
 CFLAGS += $(CFLAGS_OPENMP)

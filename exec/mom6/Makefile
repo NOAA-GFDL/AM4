@@ -354,7 +354,7 @@ generic_BLING.o: $(SRCROOT)ocean_shared/generic_tracers/generic_BLING.F90 generi
 generic_CFC.o: $(SRCROOT)ocean_shared/generic_tracers/generic_CFC.F90 generic_tracer_utils.o
 	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	$(SRCROOT)ocean_shared/generic_tracers/generic_CFC.F90
 generic_COBALT.o: $(SRCROOT)ocean_shared/generic_tracers/generic_COBALT.F90 generic_tracer_utils.o FMS_ocmip2_co2calc.o
-	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	$(SRCROOT)ocean_shared/generic_tracers/generic_COBALT.F90
+	$(FC) $(CPPDEFS) $(FPPFLAGS) $(COBALT) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	$(SRCROOT)ocean_shared/generic_tracers/generic_COBALT.F90
 generic_ERGOM.o: $(SRCROOT)ocean_shared/generic_tracers/generic_ERGOM.F90 generic_tracer_utils.o
 	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	$(SRCROOT)ocean_shared/generic_tracers/generic_ERGOM.F90
 generic_SF6.o: $(SRCROOT)ocean_shared/generic_tracers/generic_SF6.F90 generic_tracer_utils.o
