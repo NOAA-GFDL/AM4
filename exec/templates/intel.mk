@@ -177,11 +177,11 @@ else
 LIBS += $(MPI_LIBS)
 endif
 # HDF library flags
-ifndef HDF_LIBS
-LIBS += -lhdf5 -lhdf5_fortran -lhdf5_hl -lhdf5hl_fortran
-else
-LIBS += $(HDF_LIBS)
-endif
+#ifndef HDF_LIBS
+#LIBS += -lhdf5 -lhdf5_fortran -lhdf5_hl -lhdf5_hl_fortran
+#else
+#LIBS += $(HDF_LIBS)
+#endif
 # MKL library flags
 ifeq ($(MKL_LIBS),none)
 else
@@ -196,23 +196,20 @@ endif
 ifeq ($(BLD_TYPE),REPRO)
 CFLAGS += $(CFLAGS_REPRO)
 FFLAGS += $(FFLAGS_REPRO)
-COBALT = -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -i4 -r8 -nowarn -sox -traceback -xsse2 -O0 
+COBALT = $(FFLAGS)
 else ifeq ($(BLD_TYPE),DEBUG)
 CFLAGS += $(CFLAGS_DEBUG)
 FFLAGS += $(FFLAGS_DEBUG)
-COBALT = -fpp -Wp,-w -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -i4 -r8 -nowarn -sox -traceback -g -O0 -check -check noarg_temp_created -check nopointer -warn -warn noerrors -fpe0 -ftrapuv -xsse2 $(FPPFLAGS)
+COBALT = -fpp -Wp,-w -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -i4 -r8 -nowarn -sox -traceback -g -O0 -check -check noarg_temp_created -check nopointer -warn -warn noerrors -fpe0 -ftrapuv -msse2 $(FPPFLAGS)
 else ifeq ($(BLD_TYPE),TEST)
 CFLAGS += $(CFLAGS_TEST)
 FFLAGS += $(FFLAGS_TEST)
-COBALT = -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -i4 -r8 -nowarn -sox -traceback -xsse2 -O0
+COBALT = $(FFLAGS)
 else
 CFLAGS += $(CFLAGS_PROD)
 FFLAGS += $(FFLAGS_PROD)
 COBALT = $(FFLAGS)
 endif
-
-
-
 
 ifdef OPENMP
 CFLAGS += $(CFLAGS_OPENMP)
