@@ -178,7 +178,7 @@ LIBS += $(MPI_LIBS)
 endif
 # HDF library flags
 ifndef HDF_LIBS
-LIBS += -lhdf5 -lhdf5_fortran -lhdf5_hl -lhdf5hl_fortran
+LIBS += -lhdf5 -lhdf5_fortran -lhdf5_hl -lhdf5_hl_fortran
 else
 LIBS += $(HDF_LIBS)
 endif
