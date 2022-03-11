@@ -1,6 +1,6 @@
 # Makefile created by mkmf 19.3.1
 
-CPPDEFS = -DINTERNAL_FILE_NML -Duse_libMPI -Duse_netCDF
+CPPDEFS = -DINTERNAL_FILE_NML -Duse_libMPI -Duse_netCDF -DMAXFIELDMETHODS_=500 -DMAXFIELDS_=500
 
 
 include $(MK_TEMPLATE)
@@ -10,7 +10,7 @@ include $(MK_TEMPLATE)
 all: libFMS.a
 
 libFMS.a: folder configure build 
-	ln -sf build/libFMS/.libs/libFMS.a libFMS.a
+	echo path to libFMS is ${PWD}/build/libFMS/.libs/libFMS.a
 folder:
 	mkdir -p build && cd build && autoreconf -i ${SRCROOT}/FMS 
 configure: folder

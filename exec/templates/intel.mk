@@ -177,11 +177,11 @@ else
 LIBS += $(MPI_LIBS)
 endif
 # HDF library flags
-#ifndef HDF_LIBS
-#LIBS += -lhdf5 -lhdf5_fortran -lhdf5_hl -lhdf5_hl_fortran
-#else
-#LIBS += $(HDF_LIBS)
-#endif
+ifndef HDF_LIBS
+LIBS += -lhdf5 -lhdf5_fortran -lhdf5_hl -lhdf5_hl_fortran
+else
+LIBS += $(HDF_LIBS)
+endif
 # MKL library flags
 ifeq ($(MKL_LIBS),none)
 else
