@@ -33,3 +33,9 @@
 [submodule "src/FMScoupler"]
 	path = src/FMScoupler
 	url = https://github.com/NOAA-GFDL/FMScoupler.git
+[submodule "src/ice_param"]
+	path = src/ice_param
+	url = https://github.com/NOAA-GFDL/ice_param.git
+[submodule "src/land_null"]
+	path = src/land_null
+	url = https://github.com/NOAA-GFDL/land_null.git
