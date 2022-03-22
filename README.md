@@ -17,7 +17,9 @@ site](http://data1.gfdl.noaa.gov/nomads/forms/am4.0/) at the
 The layout of this package includes the following directories:
 
 * src - The source code for the AM4 model
-* exec - The build directory with Makefiles for building the model executable
+* exec - The build directory with Makefiles for building the AM4 model executable
+* idealized_exec - The build directory with Makefiles for building the aquaplanet
+and doubly periodic executable
 * run - Sample run script and updated files needed for running
 * analysis - Sample analysis scripts
 
