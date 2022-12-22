@@ -1,7 +1,7 @@
-# Makefile for Experiment 'aquaplanet_2022.01'
+# Makefile for Experiment 'aquaplanet_2020.04'
 
 BUILDROOT = $(dir $(abspath $(firstword $(MAKEFILE_LIST))))
-MKTEMPLATEROOT = $(abspath $(BUILDROOT)../exec/templates)/
+MKTEMPLATEROOT = $(abspath $(BUILDROOT)../aquaplanet_exec/templates)/
 SRCROOT = $(abspath $(BUILDROOT)../src)/ # Final '/' added to denote directory
 
 # Select the make template (default is intel)
@@ -25,8 +25,8 @@ include $(MK_TEMPLATE)
 
 SUBMAKEFLAGS = BUILDROOT=$(BUILDROOT) SRCROOT=$(SRCROOT) MK_TEMPLATE=$(MK_TEMPLATE) BLD_TYPE=$(BLD_TYPE)
 
-aquaplanet_2022.01.x: coupler/libcoupler.a atmos_dyn/libatmos_dyn.a ice/libice.a atmos_cubed_sphere/libatmos_cubed_sphere.a atmos_phys/libatmos_phys.a land/libland.a fms/build/libFMS/.libs/libFMS.a
-	$(LD) $^ $(LDFLAGS) -o $@ $(STATIC_LIBS)
+aquaplanet_2020.04.x: coupler/libcoupler.a atmos_dyn/libatmos_dyn.a ice/libice.a atmos_cubed_sphere/libatmos_cubed_sphere.a atmos_phys/libatmos_phys.a land/libland.a fms/build/libFMS/.libs/libFMS.a
+	$(LD) $^ $(LDFLAGS) -I$(BUILDROOT)fms/build/.mods -o $@ $(STATIC_LIBS)
 
 fms/build/libFMS/.libs/libFMS.a:  FORCE
 	$(MAKE) $(SUBMAKEFLAGS) OPENMP=$(OPENMP) --directory=$(BUILDROOT)fms $(@F) 

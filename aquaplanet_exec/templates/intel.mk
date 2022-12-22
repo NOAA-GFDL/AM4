@@ -87,7 +87,7 @@ endif
 MAKEFLAGS += --jobs=$(shell grep '^processor' /proc/cpuinfo | wc -l)
 
 # Macro for Fortran preprocessor
-FPPFLAGS = -fpp -Wp,-w $(INCLUDES)
+FPPFLAGS = -Wp,-w $(INCLUDES)
 # Fortran Compiler flags for the NetCDF library
 ifndef NETCDF_FLAGS
 FPPFLAGS += $(shell nf-config --fflags) 
@@ -178,7 +178,7 @@ LIBS += $(MPI_LIBS)
 endif
 # HDF library flags
 ifndef HDF_LIBS
-LIBS += -lhdf5 -lhdf5_fortran -lhdf5_hl -lhdf5_hl_fortran
+LIBS += -lhdf5 -lhdf5_fortran -lhdf5_hl -lhdf5hl_fortran
 else
 LIBS += $(HDF_LIBS)
 endif
@@ -200,7 +200,7 @@ COBALT = $(FFLAGS)
 else ifeq ($(BLD_TYPE),DEBUG)
 CFLAGS += $(CFLAGS_DEBUG)
 FFLAGS += $(FFLAGS_DEBUG)
-COBALT = -fpp -Wp,-w -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -i4 -r8 -nowarn -sox -traceback -g -O0 -check -check noarg_temp_created -check nopointer -warn -warn noerrors -fpe0 -ftrapuv -msse2 $(FPPFLAGS)
+COBALT = -Wp,-w -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -i4 -r8 -nowarn -sox -traceback -g -O0 -check -check noarg_temp_created -check nopointer -warn -warn noerrors -fpe0 -ftrapuv -msse2 $(FPPFLAGS)
 else ifeq ($(BLD_TYPE),TEST)
 CFLAGS += $(CFLAGS_TEST)
 FFLAGS += $(FFLAGS_TEST)

@@ -9,7 +9,7 @@
 	url = https://github.com/NOAA-GFDL/FMS.git
 [submodule "src/atmos_cubed_sphere"]
 	path = src/atmos_cubed_sphere
-	url = https://github.com/NOAA-GFDL/GFDL_atmos_cubed_sphere.git
+	url = https://github.com/thomas-robinson/GFDL_atmos_cubed_sphere.git
 [submodule "src/atmos_phys"]
 	path = src/atmos_phys
 	url = https://github.com/NOAA-GFDL/atmos_phys.git
@@ -29,7 +29,7 @@
 	url = https://github.com/NOAA-GFDL/GFDL_atmos_cubed_sphere.git
 [submodule "src/FMS"]
 	path = src/FMS
-	url = https://github.com/NOAA-GFDL/FMS.git
+	url = https://github.com/thomas-robinson/FMS.git
 [submodule "src/FMScoupler"]
 	path = src/FMScoupler
 	url = https://github.com/NOAA-GFDL/FMScoupler.git
