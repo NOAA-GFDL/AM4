@@ -25,13 +25,13 @@ workDir=/path/to/run/dir
 #initCondTar=${inputDataRoot}/.tar.gz
 
 # Location of executable (run with $mpiexec_prog)
-executable=/path/to/executable/fms_cm4p12_warsaw.x
+executable=/path/to/executable/aquaplanet_exec/aquaplanet_2020.04.x
 
 
 ## Run parameters
 #total_npes is the number of cores to run on, omp_threads is the number of
 # openMP threads
-total_npes=432
+total_npes=1152
 omp_threads=2
 
 # End of configuration section
